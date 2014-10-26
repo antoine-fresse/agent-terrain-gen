@@ -15,7 +15,8 @@ HEADERS += \
     heightmap.h \
     camera.h \
     gamewidget.h \
-    generatorwindow.h
+    generatorwindow.h \
+    agents/IAgent.h
 
 
 RESOURCES += \

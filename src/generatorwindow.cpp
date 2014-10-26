@@ -8,6 +8,10 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QToolBar>
+#include <QMenu>
+#include <QMenuBar>
+
+#include <iostream>
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
     QMainWindow(parent), m_gameWidget{nullptr}
@@ -34,14 +38,47 @@ void GeneratorWindow::createView()
 
     m_gameWidget = new GameWidget(60);
     m_gameWidget->setFormat(format);
+
 }
 
 void GeneratorWindow::createLayout()
 {
+    // AJOUT DU WIDGET OPENGL
     setCentralWidget(m_gameWidget);
 
-    QToolBar* agentsToolbar = new QToolBar();
-    QPushButton* button = new QPushButton("");
-    agentsToolbar->addWidget(button);
+    // AJOUT DES TOOLBARS
+    QToolBar* agentsToolbar = new QToolBar(); {
+        QPushButton* button = new QPushButton("");
+        agentsToolbar->addWidget(button);
+    }
     addToolBar(Qt::RightToolBarArea, agentsToolbar);
+
+    // AJOUT DE LA BARRE DE MENU
+    QMenuBar* menuBar = new QMenuBar(); {
+        QMenu* fileMenu = new QMenu("Fichier"); {
+            QAction* openAction = fileMenu->addAction("Ouvrir la configuration");
+            QAction* saveAction = fileMenu->addAction("Enregistrer la configuration");
+            QAction* exportAction = fileMenu->addAction("Exporter le resultat");
+            connect(exportAction, &QAction::triggered, this, &GeneratorWindow::saveHeightmap);
+        }
+        menuBar->addMenu(fileMenu);
+    }
+    setMenuBar(menuBar);
+}
+
+void GeneratorWindow::nextStep()
+{
+
+}
+
+void GeneratorWindow::saveHeightmap()
+{
+    // ENREGISTRE LA HEIGHTMAP
+    // TODO
+}
+
+void GeneratorWindow::populateAgents()
+{
+    // TODO
+    // REMPLI LE TABLEAU D'AGENTS
 }

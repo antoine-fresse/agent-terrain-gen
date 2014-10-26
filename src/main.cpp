@@ -43,6 +43,7 @@
 #include "generatorwindow.h"
 
 #include <iostream>
+#include <QScreen>
 
 int main(int argc, char** argv)
 {
@@ -51,6 +52,9 @@ int main(int argc, char** argv)
 
         GeneratorWindow myWindow;
 
+        QScreen* screen = app.primaryScreen();
+        QRect rec = screen->geometry();
+        myWindow.resize(rec.size());
         myWindow.show();
 
         return app.exec();
