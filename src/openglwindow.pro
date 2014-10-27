@@ -4,7 +4,9 @@ SOURCES += \
     heightmap.cpp \
     camera.cpp \
     gamewidget.cpp \
-    generatorwindow.cpp
+    generatorwindow.cpp \
+    agentwidget.cpp \
+    agents/coastlineagent.cpp
 
 target.path = $$[QT_INSTALL_EXAMPLES]/gui/openglwindow
 QT += opengl
@@ -16,7 +18,9 @@ HEADERS += \
     camera.h \
     gamewidget.h \
     generatorwindow.h \
-    agents/IAgent.h
+    agents/iagent.h \
+    agentwidget.h \
+    agents/coastlineagent.h
 
 
 RESOURCES += \

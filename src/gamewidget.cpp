@@ -140,6 +140,7 @@ void GameWidget::keyReleaseEvent(QKeyEvent* event)
 void GameWidget::mousePressEvent(QMouseEvent* event)
 {
     m_camera->mousePressEvent(event);
+    setFocus(Qt::MouseFocusReason);
 }
 
 void GameWidget::mouseReleaseEvent(QMouseEvent* event)

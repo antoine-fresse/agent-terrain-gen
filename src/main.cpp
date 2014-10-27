@@ -54,7 +54,7 @@ int main(int argc, char** argv)
 
         QScreen* screen = app.primaryScreen();
         QRect rec = screen->geometry();
-        myWindow.resize(rec.size());
+        myWindow.resize(rec.size().width(), rec.size().height() - 100);
         myWindow.show();
 
         return app.exec();
