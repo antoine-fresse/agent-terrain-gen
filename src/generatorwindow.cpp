@@ -18,12 +18,15 @@
 #include <ctime>
 
 #include "agents/coastlineagent.h"
+#include "agents/smoothagent.h"
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
     QMainWindow(parent), m_gameWidget{nullptr}, m_isRunning{false}, m_coastStepOver{false}, m_hasStarted{false}
 {
     srand(time(nullptr));
-    m_stageAgents.push_back(new CoastLineAgent()); // AJOUTER AGENTS ICI
+    m_stageAgents.push_back(new CoastLineAgent());
+    m_stageAgents.push_back(new SmoothAgent());
+    // AJOUTER AGENTS ICI
 
     setWindowTitle("Generateur");
     createView();

@@ -79,16 +79,26 @@ void CoastLineAgent::run()
                 {0, -1}, {0, 1},
                 {1, -1}, {1, 0}, {1, 1},
             };
+            // Le score à utiliser en priorité
             float maxScore = 0.0f;
             int maxIndex = -1;
+            // Le score à utiliser si le premier n'est pas satisfaisant
+            float secondMaxScore = 0.0f;
+            int secondMaxIndex = -1;
             for (int i = 0; i < 8; ++i) {
                 int newX = m_x + directions[i][0];
                 int newY = m_y + directions[i][1];
-                if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size) && (m_world->get(newX, newY) == 0.0)) {
+                if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
                     float score = getScore(m_x + directions[i][0], m_y + directions[i][1]);
-                    if (score > maxScore) {
-                        maxScore = score;
-                        maxIndex = i;
+                    if (m_world->get(newX, newY) == 0.0) {
+                        if (score > maxScore) {
+                            maxScore = score;
+                            maxIndex = i;
+                        }
+                    }
+                    if (score > secondMaxScore) {
+                        secondMaxScore = score;
+                        secondMaxIndex = i;
                     }
                 }
             }
@@ -99,7 +109,10 @@ void CoastLineAgent::run()
                 float maxHeight = getValue("max height");
                 int height = (float)rand() / (float)RAND_MAX * (maxHeight - minHeight) + minHeight;
                 m_world->set(m_x, m_y, height);
-            } else {
+            } /*else if (secondMaxIndex > -1) {
+                m_x = std::max(std::min(m_x + directions[secondMaxIndex][0], size - 1), 0);
+                m_y = std::max(std::min(m_y + directions[secondMaxIndex][1], size - 1), 0);
+            }*/ else {
                 m_x = std::max(std::min(m_x + m_defaultDirectionX, size - 1), 0);
                 m_y = std::max(std::min(m_y + m_defaultDirectionY, size - 1), 0);
             }
