@@ -50,6 +50,11 @@ public:
     void resizeGL(int w, int h);
 
     /**
+     * @brief Renvoie la heightmap.
+     * @return
+     */
+    HeightMap* getHeightMap();
+    /**
      * @brief Renvoie la camera actuelle de la fenêtre.
      */
     Camera* getCamera() const;

@@ -19,6 +19,7 @@ AgentWidget::AgentWidget(IAgent* templateAgent) :
                 panel2->addWidget(new QLabel(property));
                 QSpinBox* spinBox = new QSpinBox();
                 spinBox->setMinimum(0);
+                spinBox->setMaximum(1000);
                 connect(spinBox, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), [spinBox, this, property](int newValue) {
                     m_templateAgent->setValue(property, newValue);
                 });

@@ -13,13 +13,17 @@
 #include <QMenuBar>
 
 #include <iostream>
+#include <cstdlib>
+#include <algorithm>
+#include <ctime>
 
 #include "agents/coastlineagent.h"
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
     QMainWindow(parent), m_gameWidget{nullptr}, m_isRunning{false}, m_coastStepOver{false}, m_hasStarted{false}
 {
-
+    srand(time(nullptr));
+    m_stageAgents.push_back(new CoastLineAgent());
     m_stageAgents.push_back(new CoastLineAgent());
     setWindowTitle("Generateur");
     createView();
@@ -82,6 +86,7 @@ void GeneratorWindow::createView()
         m_runButton->setText("Run");
         m_stepButton->setDisabled(false);
         m_agents.clear();
+        m_gameWidget->getHeightMap()->reset();
     });
 }
 
@@ -156,6 +161,7 @@ void GeneratorWindow::populateFirstStep()
     if (m_stageAgents.size() > 0) {
         auto& templateAgent = m_stageAgents[0];
         m_agents.push_back(templateAgent->copy());
+        m_agents.back()->spawn(m_gameWidget->getHeightMap());
     }
 }
 
@@ -168,6 +174,7 @@ void GeneratorWindow::populateSecondStep()
             int count = templateAgent->getValue("count");
             for (int j = 0; j < count; ++j) {
                 m_agents.push_back(templateAgent->copy());
+                m_agents.back()->spawn(m_gameWidget->getHeightMap());
             }
         }
     }

@@ -25,6 +25,11 @@ private:
     std::map<QString, int> m_properties;
 
     int m_life;
+
+    HeightMap* m_world;
+
+    int m_x;
+    int m_y;
 };
 
 #endif // COASTLINEAGENT_H

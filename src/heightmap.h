@@ -71,7 +71,11 @@ public:
 
     QMatrix4x4 getTranform();
 
+    void reset();
+
 private:
+    void update(GameWidget* gl);
+
     // Le shader pour render la heightmap
     QOpenGLShaderProgram* m_program;
     // Le vertex array object pour rendre la heightmap
@@ -100,6 +104,8 @@ private:
     int m_nbPoints;
     // La rotation sur l'axe y
     float m_rotation;
+
+    bool m_isDirty;
 };
 
 #endif // HEIGHTMAP_H

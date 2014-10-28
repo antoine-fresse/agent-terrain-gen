@@ -69,6 +69,7 @@ HeightMap::HeightMap(int size)
     , m_snowTexture{nullptr}
     , m_nbPoints(size)
     , m_rotation{0.0f}
+    , m_isDirty{false}
 {
     m_vertices = new GLfloat[m_nbPoints * m_nbPoints];
     m_indices = new GLuint[3 * 2 * (m_nbPoints - 1) * (m_nbPoints - 1)];
@@ -147,7 +148,7 @@ void HeightMap::initialize(GameWidget* gl)
     gl->glGenBuffers(1, &m_indexBuffer);
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
-    gl->glBufferData(GL_ARRAY_BUFFER, m_nbPoints * m_nbPoints * sizeof(GLfloat), m_vertices, GL_STATIC_DRAW);
+    gl->glBufferData(GL_ARRAY_BUFFER, m_nbPoints * m_nbPoints * sizeof(GLfloat), m_vertices, GL_DYNAMIC_DRAW);
     gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
@@ -167,6 +168,9 @@ void HeightMap::initialize(GameWidget* gl)
 
 void HeightMap::render(GameWidget* gl, const QMatrix4x4& viewProj)
 {
+    if (m_isDirty) {
+        update(gl);
+    }
     m_program->bind();
     m_program->setUniformValue(m_matrixUniform, viewProj * getTranform());
 
@@ -190,6 +194,15 @@ void HeightMap::render(GameWidget* gl, const QMatrix4x4& viewProj)
 
 }
 
+void HeightMap::update(GameWidget* gl)
+{
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
+    void* buffer = gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+
+    memcpy(buffer, m_vertices, m_nbPoints * m_nbPoints * sizeof(GLfloat));
+    gl->glUnmapBuffer(GL_ARRAY_BUFFER);
+}
+
 void HeightMap::destroy(GameWidget* gl) {
 
     gl->glDeleteBuffers(1, &m_vertexBuffer);
@@ -202,6 +215,7 @@ void HeightMap::set(int x, int z, float height)
         throw std::runtime_error("HeightMap::set : Erreur de coordonées");
     }
     m_vertices[(z * m_nbPoints + x)] = height;
+    m_isDirty = true;
 }
 
 float HeightMap::get(int x, int z)
@@ -247,4 +261,10 @@ QMatrix4x4 HeightMap::getTranform()
     QMatrix4x4 translationMat;
     translationMat.translate(-(float)getSize() / 2.0, 0.0, -(float)getSize() / 2.0);
     return rotationMat * translationMat;
+}
+
+void HeightMap::reset()
+{
+    memset(m_vertices, 0, m_nbPoints * m_nbPoints * sizeof(GLfloat));
+    m_isDirty = true;
 }
