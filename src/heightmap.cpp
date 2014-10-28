@@ -220,7 +220,7 @@ void HeightMap::set(int x, int z, float height)
 
 float HeightMap::get(int x, int z)
 {
-    if ((x >= m_nbPoints) || (z >= m_nbPoints)) {
+    if ((x >= m_nbPoints) || (z >= m_nbPoints) || (x < 0) || (z < 0)) {
         throw std::runtime_error("HeightMap::get : Erreur de coordonées");
     }
     return m_vertices[(z * m_nbPoints + x)];

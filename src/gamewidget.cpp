@@ -5,7 +5,7 @@
 #include <sstream>
 #include <iomanip>
 
-GameWidget::GameWidget(int frequency) : m_heightmap(2048), m_rotationSpeed{10.0f}, m_rotate{false},
+GameWidget::GameWidget(int frequency) : m_heightmap(512), m_rotationSpeed{10.0f}, m_rotate{false},
                                         m_isProjMatrixDirty{true}, m_ownCamera{true},
                                         m_isInitialized{false}, m_frequency{frequency}, m_lastDelta{0}
 {

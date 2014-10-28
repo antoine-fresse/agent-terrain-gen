@@ -14,7 +14,7 @@ float radToDeg(float x) {
 }
 
 Camera::Camera() : m_speed{60.0f}, m_phi{degToRad(-33.0f)}, m_theta{degToRad(-10.0f)},
-                    m_thetaMax{degToRad(75.0f)}, m_sensi{0.5f}, m_position{0.0f, 0.0f, -2.0f},
+                    m_thetaMax{degToRad(75.0f)}, m_sensi{0.5f}, m_position{0.0f, 500.0f, 0.0f},
                     m_direction{Direction::NONE}, m_mousePressed{false}, m_isDirty{true} {
 }
 
