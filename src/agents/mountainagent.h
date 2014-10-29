@@ -24,6 +24,8 @@ public:
     std::unique_ptr<IAgent> copy();
 
 private:
+    float getSquareDistance(int x, int y, int x2, int y2);
+
     std::map<QString, int> m_properties;
 
     int m_life;
@@ -33,8 +35,10 @@ private:
     int m_x;
     int m_y;
 
-    int m_directionX;
-    int m_directionY;
+    int m_ticks;
+
+    int m_directions[8][2];
+    int m_directionIndex;
 };
 
 #endif // MOUNTAINAGENT_H
