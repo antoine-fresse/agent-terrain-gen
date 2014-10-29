@@ -10,6 +10,8 @@
 
 SmoothAgent::SmoothAgent() : m_life{0}
 {
+    setValue("count", 3000);
+    setValue("life", 1000);
 }
 
 void SmoothAgent::spawn(HeightMap* world)
@@ -17,8 +19,8 @@ void SmoothAgent::spawn(HeightMap* world)
     m_world = world;
 
     int size = m_world->getSize();
-    m_x = (size - 1) * (float)rand() / (float)RAND_MAX;
-    m_y = (size - 1) * (float)rand() / (float)RAND_MAX;
+    m_x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
+    m_y = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
 }
 
 void SmoothAgent::run()
@@ -31,7 +33,7 @@ void SmoothAgent::run()
             {0, -1}, {0, 1},
             {1, -1}, {1, 0}, {1, 1},
         };
-        int r = 7.0f * (float)rand() / (float)RAND_MAX;
+        int r = std::round(7.0f * (float)rand() / (float)RAND_MAX);
         int dx = directions[r][0];
         int dy = directions[r][1];
 

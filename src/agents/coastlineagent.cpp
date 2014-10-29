@@ -10,6 +10,9 @@
 
 CoastLineAgent::CoastLineAgent() : m_life{0}, m_world{nullptr}, m_x{0}, m_y{0}, m_terminal{true}
 {
+    setValue("vertice limit", 2000);
+    setValue("min height", 20);
+    setValue("max height", 25);
 }
 
 void CoastLineAgent::spawn(HeightMap* world)

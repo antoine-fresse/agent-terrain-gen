@@ -7,6 +7,7 @@ SOURCES += \
     generatorwindow.cpp \
     agentwidget.cpp \
     agents/coastlineagent.cpp \
+    agents/mountainagent.cpp \
     agents/smoothagent.cpp
 
 target.path = $$[QT_INSTALL_EXAMPLES]/gui/openglwindow
@@ -22,6 +23,7 @@ HEADERS += \
     agents/iagent.h \
     agentwidget.h \
     agents/coastlineagent.h \
+    agents/mountainagent.h \
     agents/smoothagent.h
 
 

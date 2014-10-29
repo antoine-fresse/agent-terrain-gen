@@ -19,6 +19,7 @@
 
 #include "agents/coastlineagent.h"
 #include "agents/smoothagent.h"
+#include "agents/mountainagent.h"
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
     QMainWindow(parent), m_gameWidget{nullptr}, m_isRunning{false}, m_coastStepOver{false}, m_hasStarted{false}
@@ -26,6 +27,7 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
     srand(time(nullptr));
     m_stageAgents.push_back(new CoastLineAgent());
     m_stageAgents.push_back(new SmoothAgent());
+    m_stageAgents.push_back(new MountainAgent());
     // AJOUTER AGENTS ICI
 
     setWindowTitle("Generateur");
