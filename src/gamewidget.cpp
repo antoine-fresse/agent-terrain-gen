@@ -113,7 +113,7 @@ const QMatrix4x4 &GameWidget::getProjectionMatrix()
 {
     if (m_isProjMatrixDirty) {
         m_projMatrix.setToIdentity();
-        m_projMatrix.perspective(60.0f, (float)size().width() / (float)size().height(), 1.0f, 4000.0f);
+        m_projMatrix.perspective(60.0f, (float)size().width() / (float)size().height(), 1.0f, 10000.0f);
         m_isProjMatrixDirty = false;
     }
     return m_projMatrix;

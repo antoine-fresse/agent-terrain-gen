@@ -13,7 +13,7 @@ float radToDeg(float x) {
     return x * 180.0f / pi;
 }
 
-Camera::Camera() : m_speed{60.0f}, m_phi{degToRad(-33.0f)}, m_theta{degToRad(-10.0f)},
+Camera::Camera() : m_speed{600.0f}, m_phi{degToRad(-33.0f)}, m_theta{degToRad(-10.0f)},
                     m_thetaMax{degToRad(75.0f)}, m_sensi{0.5f}, m_position{0.0f, 500.0f, 0.0f},
                     m_direction{Direction::NONE}, m_mousePressed{false}, m_isDirty{true} {
 }

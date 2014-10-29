@@ -104,6 +104,7 @@ private:
     int m_nbPoints;
     // La rotation sur l'axe y
     float m_rotation;
+    float m_scale;
 
     bool m_isDirty;
 };
