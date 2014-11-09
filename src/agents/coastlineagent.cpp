@@ -12,25 +12,22 @@
 CoastLineAgent::CoastLineAgent() : m_life{0}, m_world{nullptr}, m_x{0}, m_y{0}, m_terminal{true}, m_root{false}, m_noise{20, 0.2, 5000}
 {
     setValue("vertice limit", 2000);
-    setValue("min height", 20);
-    setValue("max height", 25);
+    setValue("min height", 70);
+    setValue("max height", 75);
 }
 
 void CoastLineAgent::spawn(HeightMap* world)
 {
     m_world = world;
-    int limit = getValue("vertice limit");
     int size = m_world->getSize();
 
     m_terminal = true;
     m_root = true;
-    //m_x = (size - 1) * (float)rand() / (float)RAND_MAX;
-    //m_y = (size - 1) * (float)rand() / (float)RAND_MAX;
 
     m_x = size / 2;
     m_y = size / 2;
 
-    m_vertices = limit;
+    m_vertices = getValue("vertice limit");
 
     auto attractor = getRandomPosition();
     m_attractorX = std::get<0>(attractor);
@@ -91,8 +88,8 @@ void CoastLineAgent::run()
             float maxScore = std::numeric_limits<float>::min();
             int maxIndex = -1;
             // Le score à utiliser si le premier n'est pas satisfaisant
-            float secondMaxScore = std::numeric_limits<float>::min();
-            int secondMaxIndex = -1;
+            float fallbackScore = std::numeric_limits<float>::max();
+            int fallbackIndex = -1;
             int neighborLand = 0;
             for (int i = 0; i < 8; ++i) {
                 int newX = m_x + directions[i][0];
@@ -100,20 +97,21 @@ void CoastLineAgent::run()
                 if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
                     float score = getScore(m_x + directions[i][0], m_y + directions[i][1]);
                     if (m_world->get(newX, newY) == 0.0) {
-                        if (score > maxScore) {
+                        if ((maxIndex == -1) || (score > maxScore)) {
                             maxScore = score;
                             maxIndex = i;
                         }
                     } else {
                         neighborLand++;
                     }
-                    if (score > secondMaxScore) {
-                        secondMaxScore = score;
-                        secondMaxIndex = i;
+                    float borderScore = getSquareDistance(size / 2, size / 2, newX, newY);
+                    if (borderScore < fallbackScore) {
+                        fallbackScore = borderScore;
+                        fallbackIndex = i;
                     }
                 }
             }
-            if ((maxIndex > -1) && ((neighborLand > 1) || ((neighborLand <= 1) && m_root))) {
+            if ((maxIndex > -1) && ((neighborLand > 0) || m_root)) {
                 m_x = std::max(std::min(m_x + directions[maxIndex][0], size - 1), 0);
                 m_y = std::max(std::min(m_y + directions[maxIndex][1], size - 1), 0);
 
@@ -121,12 +119,9 @@ void CoastLineAgent::run()
                 float maxHeight = getValue("max height");
                 int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
                 m_world->set(m_x, m_y, height);
-            } /*else if (secondMaxIndex > -1) {
-                m_x = std::max(std::min(m_x + directions[secondMaxIndex][0], size - 1), 0);
-                m_y = std::max(std::min(m_y + directions[secondMaxIndex][1], size - 1), 0);
-            }*/ else {
-                m_x = std::max(std::min(m_x + m_defaultDirectionX, size - 1), 0);
-                m_y = std::max(std::min(m_y + m_defaultDirectionY, size - 1), 0);
+            } else {
+                m_x = std::max(std::min(m_x + directions[fallbackIndex][0], size - 1), 0);
+                m_y = std::max(std::min(m_y + directions[fallbackIndex][1], size - 1), 0);
             }
         } else {
             for (int i = 0; i < 2; ++i) {
@@ -140,7 +135,7 @@ void CoastLineAgent::run()
 bool CoastLineAgent::isDead()
 {
     if (m_terminal) {
-        return m_life >= 500;
+        return m_life >= 401;
     } else {
         return m_children[0]->isDead() && m_children[1]->isDead();
     }
