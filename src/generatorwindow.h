@@ -46,6 +46,7 @@ private:
 
     QPushButton* m_runButton;
     QPushButton* m_stepButton;
+    QPushButton* m_InstantButton;
     QPushButton* m_resetButton;
 
     // Le widget affichant la heightmap

@@ -58,6 +58,7 @@ void GeneratorWindow::createView()
 
     m_runButton = new QPushButton("Run");
     m_stepButton = new QPushButton("Tick");
+    m_InstantButton = new QPushButton("Instant");
     m_resetButton = new QPushButton("Reset");
     connect(m_runButton, &QPushButton::clicked, [this]() {
         if (!m_isRunning) {
@@ -82,6 +83,16 @@ void GeneratorWindow::createView()
             m_hasStarted = true;
         }
         runAll();
+    });
+    connect(m_InstantButton, &QPushButton::clicked, [this]() {
+        if (!m_hasStarted) {
+            populateFirstStep();
+            m_hasStarted = true;
+        }
+        m_isRunning = true;
+        while (m_isRunning) {
+            runAll();
+        }
     });
     connect(m_resetButton, &QPushButton::clicked, [this]() {
         m_hasStarted = false;
@@ -112,6 +123,7 @@ void GeneratorWindow::createLayout()
     agentsToolbar = new QToolBar(); {
         agentsToolbar->addWidget(m_runButton);
         agentsToolbar->addWidget(m_stepButton);
+        agentsToolbar->addWidget(m_InstantButton);
         agentsToolbar->addWidget(m_resetButton);
     }
     addToolBar(Qt::TopToolBarArea, agentsToolbar);
