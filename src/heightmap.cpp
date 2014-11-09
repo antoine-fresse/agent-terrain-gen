@@ -79,7 +79,7 @@ HeightMap::HeightMap(int size)
     int nbVertices = 0;
     for (int z = 0; z < m_nbPoints; ++z) {
         for (int x = 0; x < m_nbPoints; ++x) {
-            m_vertices[nbVertices++] = 0;
+            m_vertices[nbVertices++] = 0.0f;
         }
     }
 
@@ -136,8 +136,8 @@ void HeightMap::initialize(GameWidget* gl)
     m_matrixUniform = m_program->uniformLocation("matrix");
     m_program->bind();
     m_program->setUniformValue("nbVertex", getSize());
-    m_program->setUniformValue("pointPerTexture", 3.0f);
-    m_program->setUniformValue("maxHeight", (float)50); // TODO
+    m_program->setUniformValue("pointPerTexture", 1.0f);
+    m_program->setUniformValue("maxHeight", (float)200); // TODO
     m_program->setUniformValue("waterSampler", 0);
     m_program->setUniformValue("sandSampler", 1);
     m_program->setUniformValue("grassSampler", 2);
@@ -237,7 +237,7 @@ float HeightMap::getHeight(QVector3D pos)
     int z = pos.z();
     int x = pos.x();
 
-    return m_vertices[(z * m_nbPoints + x)] * m_scale;
+    return m_vertices[(z * m_nbPoints + x)];
 }
 
 int HeightMap::getSize() const
@@ -263,7 +263,7 @@ QMatrix4x4 HeightMap::getTranform()
     translationMat.translate(-(float)getSize() / 2.0, 0.0, -(float)getSize() / 2.0);
 
     QMatrix4x4 scaleMatrix;
-    scaleMatrix.scale(m_scale);
+    scaleMatrix.scale(m_scale, 1.0, m_scale);
     return rotationMat * translationMat * scaleMatrix;
 }
 
