@@ -2,6 +2,7 @@
 #define MOUNTAINAGENT_H
 
 #include "iagent.h"
+#include "../noise/noise.h"
 
 #include <map>
 
@@ -39,6 +40,8 @@ private:
 
     int m_directions[8][2];
     int m_directionIndex;
+
+    SimplexNoise m_noise;
 };
 
 #endif // MOUNTAINAGENT_H

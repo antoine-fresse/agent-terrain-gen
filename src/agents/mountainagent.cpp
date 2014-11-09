@@ -8,7 +8,7 @@
 #include <algorithm>
 #include <ctime>
 
-MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}
+MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_noise{1, 1.0, 5000}
 {
     setValue("hauteur", 50);
     setValue("count", 10);
@@ -77,7 +77,7 @@ void MountainAgent::run()
                                     //newHeight = (float)height * (1.0 - (float)(dst - ss) / (float)(ww - ss));
                                 }
                                 if (newHeight > m_world->get(newX, newY)) {
-                                    m_world->set(newX, newY, newHeight);
+                                    m_world->set(newX, newY, newHeight + m_noise.getNoise(newX, newY) * 2.0);
                                 }
                             }
                         }
