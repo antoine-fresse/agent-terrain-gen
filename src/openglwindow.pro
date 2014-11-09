@@ -8,7 +8,9 @@ SOURCES += \
     agentwidget.cpp \
     agents/coastlineagent.cpp \
     agents/mountainagent.cpp \
-    agents/smoothagent.cpp
+    agents/smoothagent.cpp \
+    noise/noise.cpp \
+    noise/octave.cpp
 
 target.path = $$[QT_INSTALL_EXAMPLES]/gui/openglwindow
 QT += opengl
@@ -24,7 +26,10 @@ HEADERS += \
     agentwidget.h \
     agents/coastlineagent.h \
     agents/mountainagent.h \
-    agents/smoothagent.h
+    agents/smoothagent.h \
+    noise/noise.h \
+    noise/octave.h \
+    noise/random.h
 
 
 RESOURCES += \
