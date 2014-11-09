@@ -42,17 +42,22 @@ void SmoothAgent::run()
 
         float height = 0.0f;
         int count = 0;
-        for (int i = 0; i < 8; ++i) {
-            int newX = m_x + directions[i][0];
-            int newY = m_y + directions[i][1];
-            if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
-                height += m_world->get(newX, newY);
-                count++;
+        int neighbors = 2;
+
+        for (int i = -neighbors; i <= neighbors; ++i) {
+            for (int j = -neighbors; j <= neighbors; ++j) {
+                int newX = m_x + i;
+                int newY = m_y + j;
+                if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)
+                        && ((i + j) <= neighbors)) {
+                    height += m_world->get(newX, newY);
+                    count++;
+                }
             }
         }
-        height += m_world->get(m_x, m_y);
+        height += 3 * m_world->get(m_x, m_y);
 
-        m_world->set(m_x, m_y, height / (float)(count + 1));
+        m_world->set(m_x, m_y, height / (float)(count + 3));
     }
     m_life++;
 }
