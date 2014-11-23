@@ -15,8 +15,10 @@
 static const char* vertexShaderSource =
     "#version 330\n"
     "in highp float posAttr;\n"
+    "in vec3 normalAttr;\n"
     "out float ex_height;\n"
     "out vec2 ex_textCoord;\n"
+    "out vec3 ex_normal;\n"
     "uniform highp int nbVertex;\n"
     "uniform highp float pointPerTexture;\n"
     "uniform highp float maxHeight;\n"
@@ -24,6 +26,7 @@ static const char* vertexShaderSource =
     "void main() {\n"
     "   ex_height = posAttr / maxHeight;\n"
     "   ex_textCoord = vec2(mod(gl_VertexID, nbVertex), floor(gl_VertexID / nbVertex)) / pointPerTexture;\n"
+    "   ex_normal = normalAttr;\n"
     "   gl_Position = matrix * vec4(mod(gl_VertexID, nbVertex), posAttr, floor(gl_VertexID / nbVertex), 1.0);\n"
     "}\n";
 
@@ -39,6 +42,7 @@ static const char* fragmentShaderSource =
     "float rockLimit = 0.7;\n"
     "float snowLimit = 1.0;\n"
     "in vec2 ex_textCoord;\n"
+    "in vec3 ex_normal;\n"
     "in float ex_height;\n"
     "out vec4 out_color;\n"
     "void main() {\n"
@@ -73,6 +77,7 @@ HeightMap::HeightMap(int size)
     , m_isDirty{false}
 {
     m_vertices = new GLfloat[m_nbPoints * m_nbPoints];
+    m_normals = new GLfloat[3 * m_nbPoints * m_nbPoints];
     m_indices = new GLuint[3 * 2 * (m_nbPoints - 1) * (m_nbPoints - 1)];
 
     // Remplissage initiale de la heightmap
@@ -80,6 +85,29 @@ HeightMap::HeightMap(int size)
     for (int z = 0; z < m_nbPoints; ++z) {
         for (int x = 0; x < m_nbPoints; ++x) {
             m_vertices[nbVertices++] = 0.0f;
+        }
+    }
+    // Remplissage des normales
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (int y = 0; y < m_nbPoints; ++y) {
+            for (int x = 0; x < m_nbPoints; ++x) {
+                float sx = get(x < m_nbPoints - 1 ? x + 1 : x, y) - get(x > 0 ? x - 1 : x, y);
+                if ((x == 0) || (x == m_nbPoints - 1)) {
+                    sx *= 2.0f;
+                }
+                float sy = get(x, y < m_nbPoints - 1 ? y + 1 : y) - get(x, y > 0 ? y - 1 : y);
+                if ((y == 0) || (y == m_nbPoints - 1)) {
+                    sy *= 2.0f;
+                }
+                QVector3D normal(-sx, 2.0f * m_scale, sy);
+                normal.normalize();
+
+                m_normals[3 * (y * m_nbPoints + x) + 0] = normal.x();
+                m_normals[3 * (y * m_nbPoints + x) + 1] = normal.y();
+                m_normals[3 * (y * m_nbPoints + x) + 2] = normal.z();
+            }
         }
     }
 
@@ -133,6 +161,7 @@ void HeightMap::initialize(GameWidget* gl)
     m_program->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
+    m_normalAttr = m_program->attributeLocation("normalAttr");
     m_matrixUniform = m_program->uniformLocation("matrix");
     m_program->bind();
     m_program->setUniformValue("nbVertex", getSize());
@@ -146,10 +175,15 @@ void HeightMap::initialize(GameWidget* gl)
     m_program->release();
 
     gl->glGenBuffers(1, &m_vertexBuffer);
+    gl->glGenBuffers(1, &m_normalBuffer);
     gl->glGenBuffers(1, &m_indexBuffer);
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
     gl->glBufferData(GL_ARRAY_BUFFER, m_nbPoints * m_nbPoints * sizeof(GLfloat), m_vertices, GL_DYNAMIC_DRAW);
+    gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+    gl->glBufferData(GL_ARRAY_BUFFER, 3 * m_nbPoints * m_nbPoints * sizeof(GLfloat), nullptr, GL_DYNAMIC_DRAW);
     gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
@@ -162,6 +196,10 @@ void HeightMap::initialize(GameWidget* gl)
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
     gl->glEnableVertexAttribArray(m_posAttr);
     gl->glVertexAttribPointer(m_posAttr, 1, GL_FLOAT, GL_FALSE, 0, 0);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+    gl->glEnableVertexAttribArray(m_normalAttr);
+    gl->glVertexAttribPointer(m_normalAttr, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
     m_vao->release();
@@ -192,21 +230,25 @@ void HeightMap::render(GameWidget* gl, const QMatrix4x4& viewProj)
     m_snowTexture->release();
     m_vao->release();
     m_program->release();
-
 }
 
 void HeightMap::update(GameWidget* gl)
 {
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
     void* buffer = gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-
     memcpy(buffer, m_vertices, m_nbPoints * m_nbPoints * sizeof(GLfloat));
+    gl->glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
+    float* normalBuffer = (float*)gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    memcpy(normalBuffer, m_normals, 3 * m_nbPoints * m_nbPoints * sizeof(GLfloat));
     gl->glUnmapBuffer(GL_ARRAY_BUFFER);
 }
 
 void HeightMap::destroy(GameWidget* gl) {
 
     gl->glDeleteBuffers(1, &m_vertexBuffer);
+    gl->glDeleteBuffers(1, &m_normalBuffer);
     gl->glDeleteBuffers(1, &m_indexBuffer);
 }
 
@@ -216,6 +258,23 @@ void HeightMap::set(int x, int z, float height)
         throw std::runtime_error("HeightMap::set : Erreur de coordonées");
     }
     m_vertices[(z * m_nbPoints + x)] = height;
+    // On recalcule les normales
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (int dx = -1; dx < 2; ++dx) {
+            if (((x + dx) < 0) || ((x + dx) >= m_nbPoints)) {
+                continue;
+            }
+            for (int dz = -1; dz < 2; ++dz) {
+                if (((z + dz) < 0) || ((z + dz) >= m_nbPoints)) {
+                    continue;
+                }
+                updateNormal(x, z);
+            }
+        }
+    }
+
     m_isDirty = true;
 }
 
@@ -271,4 +330,22 @@ void HeightMap::reset()
 {
     memset(m_vertices, 0, m_nbPoints * m_nbPoints * sizeof(GLfloat));
     m_isDirty = true;
+}
+
+void HeightMap::updateNormal(int x, int y)
+{
+    float sx = get(x < m_nbPoints - 1 ? x + 1 : x, y) - get(x > 0 ? x - 1 : x, y);
+    if ((x == 0) || (x == m_nbPoints - 1)) {
+        sx *= 2.0f;
+    }
+    float sy = get(x, y < m_nbPoints - 1 ? y + 1 : y) - get(x, y > 0 ? y - 1 : y);
+    if ((y == 0) || (y == m_nbPoints - 1)) {
+        sy *= 2.0f;
+    }
+    QVector3D normal(-sx, 2.0f * m_scale, sy);
+    normal.normalize();
+
+    m_normals[3 * (y * m_nbPoints + x) + 0] = normal.x();
+    m_normals[3 * (y * m_nbPoints + x) + 1] = normal.y();
+    m_normals[3 * (y * m_nbPoints + x) + 2] = normal.z();
 }

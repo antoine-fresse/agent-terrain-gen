@@ -75,6 +75,7 @@ public:
 
 private:
     void update(GameWidget* gl);
+    void updateNormal(int x, int z);
 
     // Le shader pour render la heightmap
     QOpenGLShaderProgram* m_program;
@@ -88,15 +89,20 @@ private:
     QOpenGLTexture* m_snowTexture;
 
     GLuint m_posAttr;
+    GLuint m_normalAttr;
     // L'identifiant de l'"uniform" de la matrice dans le shader
     GLuint m_matrixUniform;
     // L'identifiant du buffer de sommets
     GLuint m_vertexBuffer;
+    // L'identifiant du buffer de normales
+    GLuint m_normalBuffer;
     // L'identifiant du buffer d'indices
     GLuint m_indexBuffer;
 
     // Le tableau de sommets
     GLfloat* m_vertices;
+    // Le tableau de normales
+    GLfloat* m_normals;
     // Le tableau d'indices
     GLuint* m_indices;
 

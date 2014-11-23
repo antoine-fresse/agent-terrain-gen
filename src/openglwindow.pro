@@ -12,6 +12,12 @@ SOURCES += \
     noise/noise.cpp \
     noise/octave.cpp
 
+QMAKE_CXXFLAGS+=-fopenmp
+QMAKE_LFLAGS+=-fopenmp
+
+QMAKE_CXXFLAGS+=-openmp
+QMAKE_LFLAGS+=-openmp
+    
 target.path = $$[QT_INSTALL_EXAMPLES]/gui/openglwindow
 QT += opengl
 INSTALLS += target
