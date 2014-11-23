@@ -59,26 +59,40 @@ void MountainAgent::run()
             float height = getValue("hauteur");
             float width = getValue("largeur");
             float slope = getValue("pente");
-            for (int dx = -width; dx < width; ++dx) {
-                int newX = m_x + dx;
-                if ((newX >= 0)&& (newX < size)) {
-                    for (int dy = -width; dy < width; ++dy) {
-                        int newY = m_y + dy;
-                        if ((newY >= 0) && (newY < size)) {
-                            int newHeight = height;
-                            float dst = getSquareDistance(newX, newY, m_x, m_y);
-                            if (dst < (width * width)) {
-                                if (dst > (slope * slope)) {
-                                    dst = std::sqrt(dst);
-                                    //float ww = width * width;
-                                    //float ss = slope * slope;
-                                    newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
-                                    //newHeight = (float)height * (1.0 - (1.0 / ((float)(dst - slope) * (float)(dst - slope))));
-                                    //newHeight = (float)height * (1.0 - (float)(dst - ss) / (float)(ww - ss));
-                                }
-                                if (newHeight > m_world->get(newX, newY)) {
-                                    m_world->set(newX, newY, newHeight + m_noise.getNoise(newX, newY) * 2.0);
-                                }
+            int dirX = m_directions[m_directionIndex][1];
+            int dirY = -m_directions[m_directionIndex][0];
+
+            for (int dr = -width; dr < width; ++dr) {
+                int newX = m_x + dirX * dr;
+                int newY = m_y + dirY * dr;
+                if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
+                    float dst = getSquareDistance(newX, newY, m_x, m_y);
+                    if (dst < (width * width)) {
+                        int newHeight = height + m_noise.getNoise(m_ticks, 0);
+                        if (dst > (slope * slope)) {
+                            dst = std::sqrt(dst);
+                            newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
+                        }
+                        if (newHeight > m_world->get(newX, newY)) {
+                            m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
+                        }
+                    }
+                }
+            }
+            if ((dirY != 0) && (dirX != 0)) {
+                for (int dr = -width; dr < width; ++dr) {
+                    int newX = m_x + dirX * dr;
+                    int newY = m_y + dirY * dr + 1;
+                    if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
+                        float dst = getSquareDistance(newX, newY, m_x, m_y);
+                        if (dst < (width * width)) {
+                            int newHeight = height + m_noise.getNoise(m_ticks, 0);
+                            if (dst > (slope * slope)) {
+                                dst = std::sqrt(dst);
+                                newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
+                            }
+                            if (newHeight > m_world->get(newX, newY)) {
+                                m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
                             }
                         }
                     }
