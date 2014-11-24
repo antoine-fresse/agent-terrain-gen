@@ -22,19 +22,28 @@
 #include "agents/mountainagent.h"
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
-    QMainWindow(parent), m_gameWidget{nullptr}, m_isRunning{false}, m_coastStepOver{false}, m_hasStarted{false}
+    QMainWindow(parent), m_gameWidget{nullptr}
 {
     srand(time(nullptr));
-    m_stageAgents.push_back(new CoastLineAgent());
-    m_stageAgents.push_back(new SmoothAgent());
-    m_stageAgents.push_back(new MountainAgent());
+
+    m_generator.addAgent(0, new CoastLineAgent());
+    m_generator.addAgent(1, new SmoothAgent());
+    m_generator.addAgent(1, new MountainAgent());
     // AJOUTER AGENTS ICI
 
     setWindowTitle("Generateur");
     createView();
     createLayout();
+
+    m_generator.setHeightMap(m_gameWidget->getHeightMap());
+    m_generator.setOnFinish([this]() {
+        m_animationTimer.stop();
+        m_runButton->setText("Run");
+        m_stepButton->setDisabled(false);
+    });
+
     m_animationTimer.setInterval(10);
-    connect(&m_animationTimer, &QTimer::timeout, this, &GeneratorWindow::runAll);
+    m_generator.connect(&m_animationTimer, &QTimer::timeout, &m_generator, &Generator::tick);
 }
 
 void GeneratorWindow::keyPressEvent(QKeyEvent* event)
@@ -61,48 +70,28 @@ void GeneratorWindow::createView()
     m_InstantButton = new QPushButton("Instant");
     m_resetButton = new QPushButton("Reset");
     connect(m_runButton, &QPushButton::clicked, [this]() {
-        if (!m_isRunning) {
-            if (!m_hasStarted) {
-                populateFirstStep();
-                m_hasStarted = true;
-            }
-            m_isRunning = true;
+        if (!m_animationTimer.isActive()) {
             m_stepButton->setDisabled(true);
             m_runButton->setText("Stop");
             m_animationTimer.start();
         } else {
-            m_isRunning = false;
             m_animationTimer.stop();
             m_runButton->setText("Run");
             m_stepButton->setDisabled(false);
         }
     });
     connect(m_stepButton, &QPushButton::clicked, [this]() {
-        if (!m_hasStarted) {
-            populateFirstStep();
-            m_hasStarted = true;
-        }
-        runAll();
+        m_generator.tick();
     });
     connect(m_InstantButton, &QPushButton::clicked, [this]() {
-        if (!m_hasStarted) {
-            populateFirstStep();
-            m_hasStarted = true;
-        }
-        m_isRunning = true;
-        while (m_isRunning) {
-            runAll();
-        }
+        m_generator.runAll();
     });
     connect(m_resetButton, &QPushButton::clicked, [this]() {
-        m_hasStarted = false;
-        m_coastStepOver = false;
-        m_isRunning = false;
+        m_generator.reset();
+
         m_animationTimer.stop();
         m_runButton->setText("Run");
         m_stepButton->setDisabled(false);
-        m_agents.clear();
-        m_gameWidget->getHeightMap()->reset();
     });
 }
 
@@ -113,9 +102,11 @@ void GeneratorWindow::createLayout()
 
     // AJOUT DES TOOLBARS
     QToolBar* agentsToolbar = new QToolBar(); {
-        for (auto& agent : m_stageAgents) {
-            AgentWidget* widget = new AgentWidget(agent);
-            agentsToolbar->addWidget(widget);
+        for (int i = 0; i < 3; ++i) {
+            for (auto& agent : m_generator.getAgents(i)) {
+                AgentWidget* widget = new AgentWidget(agent);
+                agentsToolbar->addWidget(widget);
+            }
         }
     }
     addToolBar(Qt::RightToolBarArea, agentsToolbar);
@@ -141,58 +132,8 @@ void GeneratorWindow::createLayout()
     setMenuBar(menuBar);
 }
 
-void GeneratorWindow::runAll()
-{
-    if ((m_agents.size() == 0) && (!m_coastStepOver)) {
-        m_coastStepOver = true;
-        populateSecondStep();
-    } else if ((m_agents.size() == 0) && (m_coastStepOver)) {
-        m_coastStepOver = false;
-        m_isRunning = false;
-        m_animationTimer.stop();
-        m_runButton->setText("Run");
-        m_stepButton->setDisabled(false);
-    }
-    auto it = m_agents.begin();
-    while (it != m_agents.end()) {
-        (*it)->run();
-        if ((*it)->isDead()) {
-            it = m_agents.erase(it);
-        } else {
-            ++it;
-        }
-    }
-}
-
 void GeneratorWindow::saveHeightmap()
 {
     // ENREGISTRE LA HEIGHTMAP
     // TODO
-}
-
-void GeneratorWindow::populateFirstStep()
-{
-    m_agents.clear();
-    m_coastStepOver = false;
-
-    if (m_stageAgents.size() > 0) {
-        auto& templateAgent = m_stageAgents[0];
-        m_agents.push_back(templateAgent->copy());
-        m_agents.back()->spawn(m_gameWidget->getHeightMap());
-    }
-}
-
-void GeneratorWindow::populateSecondStep()
-{
-    if (m_coastStepOver && (m_stageAgents.size() > 1)) {
-        m_agents.clear();
-        for (unsigned int i = 1; i < m_stageAgents.size(); ++i) {
-            auto& templateAgent = m_stageAgents[i];
-            int count = templateAgent->getValue("count");
-            for (int j = 0; j < count; ++j) {
-                m_agents.push_back(templateAgent->copy());
-                m_agents.back()->spawn(m_gameWidget->getHeightMap());
-            }
-        }
-    }
 }

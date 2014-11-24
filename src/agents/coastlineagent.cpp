@@ -11,6 +11,7 @@
 
 CoastLineAgent::CoastLineAgent() : m_life{0}, m_world{nullptr}, m_x{0}, m_y{0}, m_terminal{true}, m_root{false}, m_noise{20, 0.2, 5000}
 {
+    setValue("count", 1);
     setValue("vertice limit", 2000);
     setValue("min height", 70);
     setValue("max height", 75);
@@ -157,7 +158,7 @@ QString CoastLineAgent::getTypeName() const
 }
 std::vector<QString> CoastLineAgent::getProperties()
 {
-    return std::vector<QString>{"count", "vertice limit", "min height", "max height"};
+    return std::vector<QString>{"vertice limit", "min height", "max height"};
 }
 
 std::unique_ptr<IAgent> CoastLineAgent::copy()

@@ -10,7 +10,8 @@ SOURCES += \
     agents/mountainagent.cpp \
     agents/smoothagent.cpp \
     noise/noise.cpp \
-    noise/octave.cpp
+    noise/octave.cpp \
+    generator.cpp
 
 QMAKE_CXXFLAGS+=-fopenmp
 QMAKE_LFLAGS+=-fopenmp
@@ -35,7 +36,8 @@ HEADERS += \
     agents/smoothagent.h \
     noise/noise.h \
     noise/octave.h \
-    noise/random.h
+    noise/random.h \
+    generator.h
 
 
 RESOURCES += \

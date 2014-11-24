@@ -10,7 +10,7 @@
 
 MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_noise{1, 1.0, 5000}
 {
-    setValue("hauteur", 50);
+    setValue("hauteur", 200);
     setValue("count", 10);
     setValue("life", 150);
     setValue("largeur", 30);
