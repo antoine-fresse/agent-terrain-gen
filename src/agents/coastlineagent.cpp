@@ -142,20 +142,12 @@ bool CoastLineAgent::isDead()
     }
 }
 
-int CoastLineAgent::getValue(const QString& property)
-{
-    return m_properties[property];
-}
-
-void CoastLineAgent::setValue(const QString& property, int value)
-{
-    m_properties[property] = value;
-}
 
 QString CoastLineAgent::getTypeName() const
 {
     return "CoastLine";
 }
+
 std::vector<QString> CoastLineAgent::getProperties()
 {
     return std::vector<QString>{"vertice limit", "min height", "max height"};

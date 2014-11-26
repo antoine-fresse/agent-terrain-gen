@@ -109,16 +109,6 @@ bool MountainAgent::isDead()
     return m_life >= getValue("life");
 }
 
-int MountainAgent::getValue(const QString& property)
-{
-    return m_properties[property];
-}
-
-void MountainAgent::setValue(const QString& property, int value)
-{
-    m_properties[property] = value;
-}
-
 QString MountainAgent::getTypeName() const
 {
     return "Mountain";

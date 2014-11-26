@@ -1,7 +1,7 @@
 #ifndef COASTLINEAGENT_H
 #define COASTLINEAGENT_H
 
-#include "iagent.h"
+#include "abstractagent.h"
 #include "../noise/noise.h"
 
 #include <map>
@@ -9,7 +9,7 @@
 #include <list>
 #include <utility>
 
-class CoastLineAgent : public IAgent
+class CoastLineAgent : public AbstractAgent
 {
 public:
     CoastLineAgent();
@@ -17,9 +17,6 @@ public:
     void spawn(HeightMap* world);
     void run();
     bool isDead();
-
-    int getValue(const QString& property);
-    void setValue(const QString& property, int value);
 
     QString getTypeName() const;
     std::vector<QString> getProperties();
@@ -33,8 +30,6 @@ private:
     std::pair<int, int> getRandomInlandPosition();
     std::pair<int, int> getRandomDirection();
     float getSquareDistance(int x, int y, int x2, int y2);
-
-    std::map<QString, int> m_properties;
 
     int m_life;
     int m_vertices;

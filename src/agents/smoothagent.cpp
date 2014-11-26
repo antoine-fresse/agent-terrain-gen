@@ -67,16 +67,6 @@ bool SmoothAgent::isDead()
     return m_life >= getValue("life");
 }
 
-int SmoothAgent::getValue(const QString& property)
-{
-    return m_properties[property];
-}
-
-void SmoothAgent::setValue(const QString& property, int value)
-{
-    m_properties[property] = value;
-}
-
 QString SmoothAgent::getTypeName() const
 {
     return "Smooth";

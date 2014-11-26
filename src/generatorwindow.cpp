@@ -25,11 +25,14 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
     QMainWindow(parent), m_gameWidget{nullptr}
 {
     srand(time(nullptr));
-
-    m_generator.addAgent(0, new CoastLineAgent());
-    m_generator.addAgent(1, new SmoothAgent());
-    m_generator.addAgent(1, new MountainAgent());
-    // AJOUTER AGENTS ICI
+    try {
+        m_generator.load("conf.txt");
+    } catch (...) {
+        m_generator.addAgent(0, new CoastLineAgent());
+        m_generator.addAgent(1, new SmoothAgent());
+        m_generator.addAgent(1, new MountainAgent());
+        // AJOUTER AGENTS ICI
+    }
 
     setWindowTitle("Generateur");
     createView();
@@ -44,6 +47,11 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
 
     m_animationTimer.setInterval(10);
     m_generator.connect(&m_animationTimer, &QTimer::timeout, &m_generator, &Generator::tick);
+}
+
+GeneratorWindow::~GeneratorWindow()
+{
+    m_generator.save("conf.txt");
 }
 
 void GeneratorWindow::keyPressEvent(QKeyEvent* event)

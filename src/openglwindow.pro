@@ -37,7 +37,8 @@ HEADERS += \
     noise/noise.h \
     noise/octave.h \
     noise/random.h \
-    generator.h
+    generator.h \
+    agents/abstractagent.h
 
 
 RESOURCES += \

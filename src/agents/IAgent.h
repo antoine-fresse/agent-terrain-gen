@@ -21,6 +21,9 @@ public:
     virtual QString getTypeName() const = 0;
     virtual std::vector<QString> getProperties() = 0;
     virtual std::unique_ptr<IAgent> copy() = 0;
+
+    virtual QString toString() const = 0;
+    virtual void fromString(const QString& description) = 0;
 };
 
 #endif // IAGENT_H

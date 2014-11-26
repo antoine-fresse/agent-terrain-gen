@@ -2,6 +2,11 @@
 
 #include "heightmap.h"
 #include "agents/iagent.h"
+#include "agents/coastlineagent.h"
+#include "agents/mountainagent.h"
+#include "agents/smoothagent.h"
+
+#include <QFile>
 
 Generator::Generator() : m_heightmap{nullptr}, m_phaseAgents(3), m_isRunning{false},
                         m_hasStarted{false}, m_nextPhase{0}
@@ -20,12 +25,54 @@ Generator::~Generator()
 
 void Generator::load(const QString& filename)
 {
-    // TODO
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        throw std::runtime_error("Generator::load : impossible de charger le fichier");
+    }
+
+    QTextStream in(&file);
+    m_phaseAgents.clear();
+    m_phaseAgents.push_back(std::vector<IAgent*>());
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        if (line == QString("newPhase")) {
+            m_phaseAgents.push_back(std::vector<IAgent*>());
+        } else {
+            QStringList l = line.split("!", QString::SkipEmptyParts);
+            if (l.at(0) == "CoastLine") {
+                IAgent* agent = new CoastLineAgent();
+                agent->fromString(line);
+                m_phaseAgents.back().push_back(agent);
+            } else if (l.at(0) == "Mountain") {
+                IAgent* agent = new MountainAgent();
+                agent->fromString(line);
+                m_phaseAgents.back().push_back(agent);
+            } else if (l.at(0) == "Smooth") {
+                IAgent* agent = new SmoothAgent();
+                agent->fromString(line);
+                m_phaseAgents.back().push_back(agent);
+            }
+        }
+    }
+    reset();
 }
 
 void Generator::save(const QString& filename)
 {
-    // TODO
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        throw std::runtime_error("Generator::save : impossible de charger le fichier");
+    }
+
+    QTextStream out(&file);
+    for (int i = 0; i < m_phaseAgents.size(); ++i) {
+        if (i != 0) {
+            out << "newPhase\n";
+        }
+        for (auto& agent : m_phaseAgents[i]) {
+            out << agent->toString() << "\n";
+        }
+    }
 }
 
 void Generator::addAgent(int phase, IAgent* agent)

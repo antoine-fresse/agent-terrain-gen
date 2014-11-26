@@ -24,6 +24,8 @@ class GeneratorWindow : public QMainWindow
 public:
     explicit GeneratorWindow(QWidget* parent = 0);
 
+    ~GeneratorWindow();
+
     void keyPressEvent(QKeyEvent* event);
     void keyReleaseEvent(QKeyEvent* event);
 

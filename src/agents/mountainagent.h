@@ -1,14 +1,14 @@
 #ifndef MOUNTAINAGENT_H
 #define MOUNTAINAGENT_H
 
-#include "iagent.h"
+#include "abstractagent.h"
 #include "../noise/noise.h"
 
 #include <map>
 
 class HeightMap;
 
-class MountainAgent : public IAgent
+class MountainAgent : public AbstractAgent
 {
 public:
     MountainAgent();
@@ -17,17 +17,12 @@ public:
     void run();
     bool isDead();
 
-    int getValue(const QString& property);
-    void setValue(const QString& property, int value);
-
     QString getTypeName() const;
     std::vector<QString> getProperties();
     std::unique_ptr<IAgent> copy();
 
 private:
     float getSquareDistance(int x, int y, int x2, int y2);
-
-    std::map<QString, int> m_properties;
 
     int m_life;
 
