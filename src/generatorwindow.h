@@ -37,11 +37,14 @@ public:
 private:
     void createView();
     void createLayout();
+    void genAgentToolBars();
 
     QPushButton* m_runButton;
     QPushButton* m_stepButton;
     QPushButton* m_InstantButton;
     QPushButton* m_resetButton;
+
+    QToolBar* m_agentsToolbar;
 
     // Le widget affichant la heightmap
     GameWidget* m_gameWidget;

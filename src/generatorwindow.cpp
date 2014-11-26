@@ -3,6 +3,7 @@
 #include "gamewidget.h"
 #include "agentwidget.h"
 
+#include <QFileDialog>
 #include <QToolBar>
 #include <QPushButton>
 #include <QMainWindow>
@@ -26,7 +27,7 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
 {
     srand(time(nullptr));
     try {
-        m_generator.load("conf.txt");
+        m_generator.load("temp_conf");
     } catch (...) {
         m_generator.addAgent(0, new CoastLineAgent());
         m_generator.addAgent(1, new SmoothAgent());
@@ -51,7 +52,10 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
 
 GeneratorWindow::~GeneratorWindow()
 {
-    m_generator.save("conf.txt");
+    m_generator.save("temp_conf");
+    for (unsigned int i = 0; i < m_agentWidgets.size(); ++i) {
+        delete m_agentWidgets[i];
+    }
 }
 
 void GeneratorWindow::keyPressEvent(QKeyEvent* event)
@@ -109,29 +113,37 @@ void GeneratorWindow::createLayout()
     setCentralWidget(m_gameWidget);
 
     // AJOUT DES TOOLBARS
-    QToolBar* agentsToolbar = new QToolBar(); {
-        for (int i = 0; i < 3; ++i) {
-            for (auto& agent : m_generator.getAgents(i)) {
-                AgentWidget* widget = new AgentWidget(agent);
-                agentsToolbar->addWidget(widget);
-            }
-        }
+    m_agentsToolbar = new QToolBar(); {
+        genAgentToolBars();
     }
-    addToolBar(Qt::RightToolBarArea, agentsToolbar);
+    addToolBar(Qt::RightToolBarArea, m_agentsToolbar);
 
-    agentsToolbar = new QToolBar(); {
-        agentsToolbar->addWidget(m_runButton);
-        agentsToolbar->addWidget(m_stepButton);
-        agentsToolbar->addWidget(m_InstantButton);
-        agentsToolbar->addWidget(m_resetButton);
+    QToolBar* functionToolbar = new QToolBar(); {
+        functionToolbar->addWidget(m_runButton);
+        functionToolbar->addWidget(m_stepButton);
+        functionToolbar->addWidget(m_InstantButton);
+        functionToolbar->addWidget(m_resetButton);
     }
-    addToolBar(Qt::TopToolBarArea, agentsToolbar);
+    addToolBar(Qt::TopToolBarArea, functionToolbar);
 
     // AJOUT DE LA BARRE DE MENU
     QMenuBar* menuBar = new QMenuBar(); {
         QMenu* fileMenu = new QMenu("Fichier"); {
             QAction* openAction = fileMenu->addAction("Ouvrir la configuration");
+            connect(openAction, &QAction::triggered, this, [this]() {
+                QString file = QFileDialog::getOpenFileName(this, tr("Open File"),"", tr("Files (*.*)"));
+                if (file != QString()) {
+                    m_generator.load(file);
+                    genAgentToolBars();
+                }
+            });
             QAction* saveAction = fileMenu->addAction("Enregistrer la configuration");
+            connect(saveAction, &QAction::triggered, this, [this]() {
+                QString file = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("Images (*.*)"));
+                if (file != QString()) {
+                    m_generator.save(file);
+                }
+            });
             QAction* exportAction = fileMenu->addAction("Exporter le resultat");
             connect(exportAction, &QAction::triggered, this, &GeneratorWindow::saveHeightmap);
         }
@@ -140,8 +152,22 @@ void GeneratorWindow::createLayout()
     setMenuBar(menuBar);
 }
 
+void GeneratorWindow::genAgentToolBars()
+{
+    for (unsigned int i = 0; i < m_agentWidgets.size(); ++i) {
+        delete m_agentWidgets[i];
+    }
+    m_agentWidgets.clear();
+    m_agentsToolbar->clear();
+    for (int i = 0; i < 3; ++i) {
+        for (auto& agent : m_generator.getAgents(i)) {
+            AgentWidget* widget = new AgentWidget(agent);
+            m_agentsToolbar->addWidget(widget);
+        }
+    }
+}
+
 void GeneratorWindow::saveHeightmap()
 {
-    // ENREGISTRE LA HEIGHTMAP
-    // TODO
+    //TODO
 }
