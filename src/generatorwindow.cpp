@@ -169,5 +169,9 @@ void GeneratorWindow::genAgentToolBars()
 
 void GeneratorWindow::saveHeightmap()
 {
-    //TODO
+    QFile file("height.raw");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        throw std::runtime_error("Generator::save : impossible de charger le fichier");
+    }
+    m_gameWidget->getHeightMap()->save(file);
 }

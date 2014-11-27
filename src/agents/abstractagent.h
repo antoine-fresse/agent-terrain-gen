@@ -4,7 +4,6 @@
 #include "iagent.h"
 #include <map>
 #include <QStringList>
-#include <iostream>
 
 class AbstractAgent : public IAgent
 {
@@ -22,7 +21,6 @@ public:
         QString res = getTypeName();
 
         for (auto& pair : m_properties) {
-            std::cout << pair.first.toStdString() << ":" << QString::number(pair.second).toStdString() << std::endl;
             res += "!" + pair.first + ":" + QString::number(pair.second);
         }
         return res;

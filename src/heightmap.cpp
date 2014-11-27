@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <ctime>
+#include <QFile>
 
 #include <QtGui/QOpenGLShaderProgram>
 #include <QtGui/QOpenGLVertexArrayObject>
@@ -348,4 +349,26 @@ void HeightMap::updateNormal(int x, int y)
     m_normals[3 * (y * m_nbPoints + x) + 0] = normal.x();
     m_normals[3 * (y * m_nbPoints + x) + 1] = normal.y();
     m_normals[3 * (y * m_nbPoints + x) + 2] = normal.z();
+}
+
+void HeightMap::save(QFile& file)
+{
+    short* data = new short[m_nbPoints * m_nbPoints];
+    for (int i = 0; i < (m_nbPoints * m_nbPoints); ++i) {
+        data[i] = (short)m_vertices[i];
+    }
+    std::cout << "size " << m_nbPoints * m_nbPoints * sizeof(short) << std::endl;
+
+    int toWrite = m_nbPoints * m_nbPoints * sizeof(short);
+    int offset = 0;
+    while (toWrite > 0) {
+        int writed = file.write(((const char*)data) + offset, toWrite);
+        if (writed == -1) {
+            std::cout << "Error" << std::endl;
+        }
+        toWrite -= writed;
+        offset += writed;
+    }
+
+    //file.resize(m_nbPoints * m_nbPoints * sizeof(short));
 }

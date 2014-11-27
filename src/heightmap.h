@@ -12,6 +12,7 @@ class GameWidget;
 class QOpenGLVertexArrayObject;
 class QOpenGLShaderProgram;
 class QOpenGLTexture;
+class QFile;
 
 /**
  * @brief La classe permettant de charger et afficher les heightmap.
@@ -72,6 +73,8 @@ public:
     QMatrix4x4 getTranform();
 
     void reset();
+
+    void save(QFile& file);
 
 private:
     void update(GameWidget* gl);
