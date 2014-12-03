@@ -27,6 +27,10 @@ private:
 
     int m_x;
     int m_y;
+
+    int m_start_x;
+    int m_start_y;
 };
 
 #endif // SMOOTHAGENT_H
+

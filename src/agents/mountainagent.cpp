@@ -10,7 +10,8 @@
 
 MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_noise{1, 1.0, 5000}
 {
-    setValue("hauteur", 200);
+    setValue("max_hauteur", 200);
+    setValue("variation_hauteur", 100);
     setValue("count", 10);
     setValue("life", 150);
     setValue("largeur", 30);
@@ -29,6 +30,10 @@ MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_n
 void MountainAgent::spawn(HeightMap* world)
 {
     m_world = world;
+    m_height = getValue("max_hauteur") - ((float)rand() / (float)RAND_MAX)*getValue("variation_hauteur");
+    m_variationHauteur = std::round( (float)rand()/(float)RAND_MAX );
+
+    //std::cout << m_height << std::endl;
 
     int size = m_world->getSize();
     m_x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
@@ -56,9 +61,24 @@ void MountainAgent::run()
         m_y = std::max(std::min(m_y + m_directions[m_directionIndex][1], size - 1), 0);
 
         if (m_world->get(m_x, m_y) > 1) {
-            float height = getValue("hauteur");
             float width = getValue("largeur");
             float slope = getValue("pente");
+
+            if(m_variationHauteur = 0){
+                m_height = m_height - 1.0 ;
+                if(m_height < getValue("max_hauteur")-getValue("variation_hauteur")){
+                    m_height = getValue("max_hauteur")-getValue("variation_hauteur");
+                    m_variationHauteur = 1;
+                }
+            }else{
+                m_height = m_height + 1.0;
+                if(m_height > getValue("max_hauteur")){
+                    m_height = getValue("max_hauteur");
+                    m_variationHauteur = 0;
+                }
+            }
+            float height = m_height;
+
             int dirX = m_directions[m_directionIndex][1];
             int dirY = -m_directions[m_directionIndex][0];
 
@@ -68,10 +88,10 @@ void MountainAgent::run()
                 if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
                     float dst = getSquareDistance(newX, newY, m_x, m_y);
                     if (dst < (width * width)) {
-                        int newHeight = height + m_noise.getNoise(m_ticks, 0);
+                        int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
                         if (dst > (slope * slope)) {
                             dst = std::sqrt(dst);
-                            newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
+                            newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
                         }
                         if (newHeight > m_world->get(newX, newY)) {
                             m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
@@ -86,13 +106,13 @@ void MountainAgent::run()
                     if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
                         float dst = getSquareDistance(newX, newY, m_x, m_y);
                         if (dst < (width * width)) {
-                            int newHeight = height + m_noise.getNoise(m_ticks, 0);
+                            int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
                             if (dst > (slope * slope)) {
                                 dst = std::sqrt(dst);
                                 newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
                             }
                             if (newHeight > m_world->get(newX, newY)) {
-                                m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
+                                m_world->set(newX, newY, newHeight);
                             }
                         }
                     }
@@ -116,7 +136,7 @@ QString MountainAgent::getTypeName() const
 
 std::vector<QString> MountainAgent::getProperties()
 {
-    return std::vector<QString>{"count", "life", "hauteur", "largeur", "pente", "tick"};
+    return std::vector<QString>{"count", "life", "max_hauteur","variation_hauteur", "largeur", "pente", "tick"};
 }
 
 std::unique_ptr<IAgent> MountainAgent::copy()

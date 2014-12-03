@@ -13,7 +13,7 @@ CoastLineAgent::CoastLineAgent() : m_life{0}, m_world{nullptr}, m_x{0}, m_y{0}, 
 {
     setValue("count", 1);
     setValue("vertice limit", 2000);
-    setValue("min height", 70);
+    setValue("min height", 30);
     setValue("max height", 75);
 }
 
@@ -72,6 +72,8 @@ void CoastLineAgent::run()
             m_children[0]->spawn(m_world, m_vertices / 2);
             m_children[0]->m_x = m_x;
             m_children[0]->m_y = m_y;
+            //m_children[0]->m_life =
+
             m_children[1] = copyCoastLine();
             m_children[1]->spawn(m_world, m_vertices / 2);
             m_children[1]->m_x = m_x;
@@ -118,8 +120,10 @@ void CoastLineAgent::run()
 
                 float minHeight = getValue("min height");
                 float maxHeight = getValue("max height");
-                int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
+                //int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
+                int height = minHeight;
                 m_world->set(m_x, m_y, height);
+                //m_vertices--;
             } else {
                 m_x = std::max(std::min(m_x + directions[fallbackIndex][0], size - 1), 0);
                 m_y = std::max(std::min(m_y + directions[fallbackIndex][1], size - 1), 0);

@@ -36,6 +36,10 @@ private:
     int m_directions[8][2];
     int m_directionIndex;
 
+    float m_height;
+    int m_variationHauteur;
+
+
     SimplexNoise m_noise;
 };
 

@@ -64,8 +64,7 @@ void GameWidget::paintGL()
     }
     getCamera()->setPosition(pos);
 
-    const QMatrix4x4 viewProj = getProjectionMatrix() * getCamera()->getViewMatrix();
-    m_heightmap.render(this, viewProj);
+    m_heightmap.render(this, getCamera()->getViewMatrix(), getProjectionMatrix());
 }
 
 void GameWidget::setFrequency(int frequency)

@@ -39,7 +39,7 @@ public:
      * @brief Dessine la heightmap
      * @param viewProj La matrice view-Proj.
      */
-    void render(GameWidget* gl, const QMatrix4x4& viewProj);
+    void render(GameWidget* gl, const QMatrix4x4& view, const QMatrix4x4& proj);
     void destroy(GameWidget* gl);
 
     /**
@@ -70,7 +70,7 @@ public:
      */
     void setRotation(float rotation);
 
-    QMatrix4x4 getTranform();
+    QMatrix4x4 getTransform();
 
     void reset();
 
@@ -94,7 +94,11 @@ private:
     GLuint m_posAttr;
     GLuint m_normalAttr;
     // L'identifiant de l'"uniform" de la matrice dans le shader
-    GLuint m_matrixUniform;
+    //GLuint m_matrixUniform;
+    GLuint m_viewMatrixUniform;
+    GLuint m_modelMatrixUniform;
+    GLuint m_projMatrixUniform;
+
     // L'identifiant du buffer de sommets
     GLuint m_vertexBuffer;
     // L'identifiant du buffer de normales

@@ -12,6 +12,7 @@ SmoothAgent::SmoothAgent() : m_life{0}
 {
     setValue("count", 3000);
     setValue("life", 1000);
+    setValue("nb_resets", 1);
 }
 
 void SmoothAgent::spawn(HeightMap* world)
@@ -21,6 +22,9 @@ void SmoothAgent::spawn(HeightMap* world)
     int size = m_world->getSize();
     m_x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
     m_y = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
+
+    m_start_x = m_x;
+    m_start_y = m_y;
 }
 
 void SmoothAgent::run()
@@ -60,6 +64,11 @@ void SmoothAgent::run()
         m_world->set(m_x, m_y, height / (float)(count + 3));
     }
     m_life++;
+
+    if(m_life % (getValue("life")/(getValue("nb_resets")+1)) == 0){
+        m_x = m_start_x;
+        m_y = m_start_y;
+    }
 }
 
 bool SmoothAgent::isDead()
@@ -74,7 +83,7 @@ QString SmoothAgent::getTypeName() const
 
 std::vector<QString> SmoothAgent::getProperties()
 {
-    return std::vector<QString>{"count", "life"};
+    return std::vector<QString>{"count", "life", "nb_resets"};
 }
 
 std::unique_ptr<IAgent> SmoothAgent::copy()

@@ -1,9 +1,14 @@
 <RCC>
-    <qresource prefix="/">
-        <file>textures/water.png</file>
-        <file>textures/sand.png</file>
-        <file>textures/grass.png</file>
-        <file>textures/rock.png</file>
-        <file>textures/snow.png</file>
-    </qresource>
+	<qresource prefix="/">
+		<file>textures/water.png</file>
+		<file>textures/sand.png</file>
+		<file>textures/grass.png</file>
+		<file>textures/rock.png</file>
+		<file>textures/snow.png</file>
+		<file>shaders/shader.frag</file>
+		<file>shaders/shader.vert</file>
+		<file>textures/grass.jpg</file>
+		<file>textures/water.jpg</file>
+	</qresource>
 </RCC>
+
