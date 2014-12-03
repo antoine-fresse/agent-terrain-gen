@@ -28,8 +28,10 @@ HeightMap::HeightMap(int size)
     , m_rotation{0.0f}
     , m_scale{10.0f}
     , m_isDirty{false}
+    , m_isMaterialDirty{false}
 {
     m_vertices = new GLfloat[m_nbPoints * m_nbPoints];
+    m_materials = new GLint[m_nbPoints * m_nbPoints];
     m_normals = new GLfloat[3 * m_nbPoints * m_nbPoints];
     m_indices = new GLuint[3 * 2 * (m_nbPoints - 1) * (m_nbPoints - 1)];
 
@@ -39,6 +41,10 @@ HeightMap::HeightMap(int size)
         for (int x = 0; x < m_nbPoints; ++x) {
             m_vertices[nbVertices++] = 0.0f;
         }
+    }
+    // Remplissage des matériaux
+    for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
+        m_materials[i] = 1;
     }
     // Remplissage des normales
     #pragma omp parallel
@@ -82,6 +88,7 @@ HeightMap::HeightMap(int size)
         }
     }
     m_isDirty = true;
+    m_isMaterialDirty = true;
 }
 
 HeightMap::~HeightMap()
@@ -90,6 +97,8 @@ HeightMap::~HeightMap()
     delete m_vao;
 
     delete[] m_vertices;
+    delete[] m_materials;
+    delete[] m_normals;
     delete[] m_indices;
 
     delete m_waterTexture;
@@ -123,6 +132,7 @@ void HeightMap::initialize(GameWidget* gl)
     m_program->link();
     m_posAttr = m_program->attributeLocation("posAttr");
     m_normalAttr = m_program->attributeLocation("normalAttr");
+    m_materialAttr = m_program->attributeLocation("materialAttr");
 
     m_viewMatrixUniform = m_program->uniformLocation("view_matrix");
     m_modelMatrixUniform = m_program->uniformLocation("model_matrix");
@@ -141,11 +151,16 @@ void HeightMap::initialize(GameWidget* gl)
     m_program->release();
 
     gl->glGenBuffers(1, &m_vertexBuffer);
+    gl->glGenBuffers(1, &m_materialBuffer);
     gl->glGenBuffers(1, &m_normalBuffer);
     gl->glGenBuffers(1, &m_indexBuffer);
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
     gl->glBufferData(GL_ARRAY_BUFFER, m_nbPoints * m_nbPoints * sizeof(GLfloat), m_vertices, GL_DYNAMIC_DRAW);
+    gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_materialBuffer);
+    gl->glBufferData(GL_ARRAY_BUFFER, m_nbPoints * m_nbPoints * sizeof(GLint), m_materials, GL_DYNAMIC_DRAW);
     gl->glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
@@ -163,6 +178,10 @@ void HeightMap::initialize(GameWidget* gl)
     gl->glEnableVertexAttribArray(m_posAttr);
     gl->glVertexAttribPointer(m_posAttr, 1, GL_FLOAT, GL_FALSE, 0, 0);
 
+    gl->glBindBuffer(GL_ARRAY_BUFFER, m_materialBuffer);
+    gl->glEnableVertexAttribArray(m_materialAttr);
+    gl->glVertexAttribIPointer(m_materialAttr, 1, GL_INT, 0, 0);
+
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_normalBuffer);
     gl->glEnableVertexAttribArray(m_normalAttr);
     gl->glVertexAttribPointer(m_normalAttr, 3, GL_FLOAT, GL_FALSE, 0, 0);
@@ -174,7 +193,7 @@ void HeightMap::initialize(GameWidget* gl)
 void HeightMap::render(GameWidget* gl, const QMatrix4x4& view, const QMatrix4x4& proj)
 {
     if (m_isDirty) {
-        update(gl);
+        update(gl, m_isMaterialDirty);
     }
     m_program->bind();
     //m_program->setUniformValue(m_matrixUniform, viewProj * getTranform());
@@ -202,7 +221,7 @@ void HeightMap::render(GameWidget* gl, const QMatrix4x4& view, const QMatrix4x4&
     m_program->release();
 }
 
-void HeightMap::update(GameWidget* gl)
+void HeightMap::update(GameWidget* gl, bool updateMaterial)
 {
     gl->glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer);
     void* buffer = gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
@@ -213,11 +232,22 @@ void HeightMap::update(GameWidget* gl)
     float* normalBuffer = (float*)gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     memcpy(normalBuffer, m_normals, 3 * m_nbPoints * m_nbPoints * sizeof(GLfloat));
     gl->glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    if (updateMaterial) {
+        gl->glBindBuffer(GL_ARRAY_BUFFER, m_materialBuffer);
+        GLint* materialBuffer = (GLint*)gl->glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+        memcpy(materialBuffer, m_materials, m_nbPoints * m_nbPoints * sizeof(GLint));
+        gl->glUnmapBuffer(GL_ARRAY_BUFFER);
+
+    }
+    m_isDirty = false;
+    m_isMaterialDirty = false;
 }
 
 void HeightMap::destroy(GameWidget* gl) {
 
     gl->glDeleteBuffers(1, &m_vertexBuffer);
+    gl->glDeleteBuffers(1, &m_materialBuffer);
     gl->glDeleteBuffers(1, &m_normalBuffer);
     gl->glDeleteBuffers(1, &m_indexBuffer);
 }
@@ -249,6 +279,16 @@ void HeightMap::set(int x, int z, float height)
     }
 
     m_isDirty = true;
+}
+
+void HeightMap::setMaterial(int x, int z, Material mat)
+{
+    if ((x >= m_nbPoints) || (z >= m_nbPoints)) {
+        throw std::runtime_error("HeightMap::set : Erreur de coordonées");
+    }
+    m_materials[(z * m_nbPoints + x)] = mat;
+
+    m_isMaterialDirty = true;
 }
 
 float HeightMap::get(int x, int z)

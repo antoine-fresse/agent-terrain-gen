@@ -123,6 +123,7 @@ void CoastLineAgent::run()
                 //int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
                 int height = minHeight;
                 m_world->set(m_x, m_y, height);
+                m_world->setMaterial(m_x, m_y, HeightMap::Grass);
                 //m_vertices--;
             } else {
                 m_x = std::max(std::min(m_x + directions[fallbackIndex][0], size - 1), 0);

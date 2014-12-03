@@ -95,6 +95,7 @@ void MountainAgent::run()
                         }
                         if (newHeight > m_world->get(newX, newY)) {
                             m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
+                            m_world->setMaterial(newX, newY, HeightMap::Snow);
                         }
                     }
                 }
@@ -113,6 +114,7 @@ void MountainAgent::run()
                             }
                             if (newHeight > m_world->get(newX, newY)) {
                                 m_world->set(newX, newY, newHeight);
+                                m_world->setMaterial(newX, newY, HeightMap::Snow);
                             }
                         }
                     }

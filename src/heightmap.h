@@ -20,6 +20,13 @@ class QFile;
 class HeightMap
 {
 public:
+    enum Material {
+        Water = 0,
+        Grass,
+        Sand,
+        Snow,
+    };
+
     /**
      * @brief Constructeur qui crée une heightmap aléatoire.
      */
@@ -51,6 +58,7 @@ public:
      * @param height La nouvelle hauteur du sommet.
      */
     void set(int x, int z, float height);
+    void setMaterial(int x, int z, Material mat);
     /**
      * @brief Renvoie la hauteur de la heightmap pour un certain point dans l'espace.
      * @param pos Le point pour lequel on veut la hauteur.
@@ -82,7 +90,7 @@ public:
     void computeNormals();
 
 private:
-    void update(GameWidget* gl);
+    void update(GameWidget* gl, bool updateMaterial);
     void updateNormal(int x, int z);
 
     // Le shader pour render la heightmap
@@ -97,6 +105,7 @@ private:
     QOpenGLTexture* m_snowTexture;
 
     GLuint m_posAttr;
+    GLuint m_materialAttr;
     GLuint m_normalAttr;
     // L'identifiant de l'"uniform" de la matrice dans le shader
     //GLuint m_matrixUniform;
@@ -106,6 +115,8 @@ private:
 
     // L'identifiant du buffer de sommets
     GLuint m_vertexBuffer;
+    // L'identifiant du buffer de matériaux
+    GLuint m_materialBuffer;
     // L'identifiant du buffer de normales
     GLuint m_normalBuffer;
     // L'identifiant du buffer d'indices
@@ -113,6 +124,8 @@ private:
 
     // Le tableau de sommets
     GLfloat* m_vertices;
+    // Le tableau de matériaux
+    GLint* m_materials;
     // Le tableau de normales
     GLfloat* m_normals;
     // Le tableau d'indices
@@ -127,6 +140,7 @@ private:
     bool m_computeNormals = true;
 
     bool m_isDirty;
+    bool m_isMaterialDirty;
 };
 
 #endif // HEIGHTMAP_H

@@ -18,15 +18,16 @@ vec3 light_spec = vec3(1.0,1.0,1.0);
 vec3 light_diff = vec3(1.0,1.0,1.0);
 vec3 light_amb = vec3(0.2,0.2,0.2);
 
+in vec4 ex_weights;
 in vec2 ex_textCoord;
 in vec3 ex_normal;
 in float ex_height;
 in vec4 ex_pos;
-out vec4 out_color;
 
 in vec3 eye_position;
 in vec3 eye_normal;
 
+out vec4 out_color;
 
 
 void main() {
@@ -35,20 +36,23 @@ void main() {
 	if (ex_height < sandLimit) {
 		texel = texture2D(waterSampler, ex_textCoord.xy);
 	} else {
+        vec4 water = texture2D(waterSampler, ex_textCoord.xy);
 		vec4 sand = texture2D(sandSampler, ex_textCoord.xy);
 		vec4 grass = texture2D(grassSampler, ex_textCoord.xy);
 		vec4 rock = texture2D(rockSampler, ex_textCoord.xy);
 		vec4 snow = texture2D(snowSampler, ex_textCoord.xy);
 		vec4 weights;
 
-
-
 		weights.x = clamp(1.0f - abs(ex_height - sandLimit) / 0.2f, 0.0, 1.0);
 		weights.y = clamp(1.0f - abs(ex_height - grassLimit) / 0.2f, 0.0, 1.0);
 		weights.z = clamp(1.0f - abs(ex_height - rockLimit) / 0.2f, 0.0, 1.0);
 		weights.w = clamp(1.0f - abs(ex_height - snowLimit) / 0.2f, 0.0, 1.0);
-		weights = weights / (weights.x + weights.y + weights.z + weights.w);
+        weights = weights / (weights.x + weights.y + weights.z + weights.w);
 		texel = sand * weights.x + grass * weights.y + rock * weights.z + snow * weights.w;
+        
+        /*weights = ex_weights;
+		weights = weights / (weights.x + weights.y + weights.z + weights.w);
+		texel = water * weights.x + grass * weights.y + sand * weights.z + snow * weights.w;*/
 	}
 
 	vec3 Ia = light_amb * vec3(texel);
