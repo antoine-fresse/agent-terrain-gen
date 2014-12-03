@@ -13,56 +13,8 @@
 
 #include "gamewidget.h"
 
-static const char* vertexShaderSource =
-    "#version 330\n"
-    "in highp float posAttr;\n"
-    "in vec3 normalAttr;\n"
-    "out float ex_height;\n"
-    "out vec2 ex_textCoord;\n"
-    "out vec3 ex_normal;\n"
-    "uniform highp int nbVertex;\n"
-    "uniform highp float pointPerTexture;\n"
-    "uniform highp float maxHeight;\n"
-    "uniform highp mat4 matrix;\n"
-    "void main() {\n"
-    "   ex_height = posAttr / maxHeight;\n"
-    "   ex_textCoord = vec2(mod(gl_VertexID, nbVertex), floor(gl_VertexID / nbVertex)) / pointPerTexture;\n"
-    "   ex_normal = normalAttr;\n"
-    "   gl_Position = matrix * vec4(mod(gl_VertexID, nbVertex), posAttr, floor(gl_VertexID / nbVertex), 1.0);\n"
-    "}\n";
+#include <omp.h>
 
-static const char* fragmentShaderSource =
-    "#version 330\n"
-    "uniform sampler2D waterSampler;\n"
-    "uniform sampler2D sandSampler;\n"
-    "uniform sampler2D grassSampler;\n"
-    "uniform sampler2D rockSampler;\n"
-    "uniform sampler2D snowSampler;\n"
-    "float sandLimit = 0.05;\n"
-    "float grassLimit = 0.4;\n"
-    "float rockLimit = 0.7;\n"
-    "float snowLimit = 1.0;\n"
-    "in vec2 ex_textCoord;\n"
-    "in vec3 ex_normal;\n"
-    "in float ex_height;\n"
-    "out vec4 out_color;\n"
-    "void main() {\n"
-    "    if (ex_height < sandLimit) {\n"
-    "        out_color = texture2D(waterSampler, ex_textCoord.xy);\n"
-    "    } else {\n"
-    "        vec4 sand = texture2D(sandSampler, ex_textCoord.xy);\n"
-    "        vec4 grass = texture2D(grassSampler, ex_textCoord.xy);\n"
-    "        vec4 rock = texture2D(rockSampler, ex_textCoord.xy);\n"
-    "        vec4 snow = texture2D(snowSampler, ex_textCoord.xy);\n"
-    "        vec4 weights;"
-    "        weights.x = clamp(1.0f - abs(ex_height - sandLimit) / 0.2f, 0.0, 1.0);\n"
-    "        weights.y = clamp(1.0f - abs(ex_height - grassLimit) / 0.2f, 0.0, 1.0);\n"
-    "        weights.z = clamp(1.0f - abs(ex_height - rockLimit) / 0.2f, 0.0, 1.0);\n"
-    "        weights.w = clamp(1.0f - abs(ex_height - snowLimit) / 0.2f, 0.0, 1.0);\n"
-    "        weights = weights / (weights.x + weights.y + weights.z + weights.w);\n"
-    "        out_color = sand * weights.x + grass * weights.y + rock * weights.z + snow * weights.w;\n"
-    "    }"
-    "}\n";
 
 HeightMap::HeightMap(int size)
     : m_program(nullptr)
@@ -104,10 +56,11 @@ HeightMap::HeightMap(int size)
                 }
                 QVector3D normal(-sx, 2.0f * m_scale, sy);
                 normal.normalize();
-                */
+
                 m_normals[3 * (y * m_nbPoints + x) + 0] = 1.0f;
                 m_normals[3 * (y * m_nbPoints + x) + 1] = 1.0f;
                 m_normals[3 * (y * m_nbPoints + x) + 2] = 1.0f;
+                */
                 updateNormal(x,y);
             }
         }
@@ -276,23 +229,24 @@ void HeightMap::set(int x, int z, float height)
     }
     m_vertices[(z * m_nbPoints + x)] = height;
 
+    if(m_computeNormals){
     // On recalcule les normales
-    //pragma omp parallel
-    //{
-        //#pragma omp for
-        for (int dx = -1; dx < 2; ++dx) {
-            if (((x + dx) < 0) || ((x + dx) >= m_nbPoints)) {
-                continue;
-            }
-            for (int dz = -1; dz < 2; ++dz) {
-                if (((z + dz) < 0) || ((z + dz) >= m_nbPoints)) {
+        #pragma omp parallel
+        {
+            //#pragma omp for
+            for (int dx = -1; dx < 2; ++dx) {
+                if (((x + dx) < 0) || ((x + dx) >= m_nbPoints)) {
                     continue;
                 }
-                updateNormal(x, z);
+                for (int dz = -1; dz < 2; ++dz) {
+                    if (((z + dz) < 0) || ((z + dz) >= m_nbPoints)) {
+                        continue;
+                    }
+                    updateNormal(x, z);
+                }
             }
         }
-    //}
-
+    }
 
     m_isDirty = true;
 }
@@ -303,6 +257,40 @@ float HeightMap::get(int x, int z)
         throw std::runtime_error("HeightMap::get : Erreur de coordonées");
     }
     return m_vertices[(z * m_nbPoints + x)];
+}
+
+void HeightMap::computeNormals(){
+    // Remplissage des normales
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (int y = 0; y < m_nbPoints; ++y) {
+            for (int x = 0; x < m_nbPoints; ++x) {
+                /*float sx = get(x < m_nbPoints - 1 ? x + 1 : x, y) - get(x > 0 ? x - 1 : x, y);
+                if ((x == 0) || (x == m_nbPoints - 1)) {
+                    sx *= 2.0f;
+                }
+                float sy = get(x, y < m_nbPoints - 1 ? y + 1 : y) - get(x, y > 0 ? y - 1 : y);
+                if ((y == 0) || (y == m_nbPoints - 1)) {
+                    sy *= 2.0f;
+                }
+                QVector3D normal(-sx, 2.0f * m_scale, sy);
+                normal.normalize();
+
+                m_normals[3 * (y * m_nbPoints + x) + 0] = 1.0f;
+                m_normals[3 * (y * m_nbPoints + x) + 1] = 1.0f;
+                m_normals[3 * (y * m_nbPoints + x) + 2] = 1.0f;
+                */
+                updateNormal(x,y);
+            }
+        }
+    }
+
+    m_isDirty = true;
+}
+
+void HeightMap::setComputeNormals(bool b){
+    m_computeNormals = b;
 }
 
 float HeightMap::getHeight(QVector3D pos)

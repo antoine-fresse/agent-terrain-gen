@@ -105,6 +105,7 @@ void Generator::tick()
         } else {
             m_isRunning = false;
             m_onFinish();
+            m_heightmap->computeNormals();
         }
     }
     auto it = m_agents.begin();
@@ -116,14 +117,18 @@ void Generator::tick()
             ++it;
         }
     }
+
 }
 
 void Generator::runAll()
 {
+    m_heightmap->setComputeNormals(false);
     m_isRunning = true;
     while (m_isRunning) {
         tick();
     }
+    m_heightmap->setComputeNormals(true);
+    m_heightmap->computeNormals();
 }
 
 bool Generator::isStarted() const

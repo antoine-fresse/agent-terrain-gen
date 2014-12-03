@@ -1,45 +1,48 @@
 
 SOURCES += \
-    main.cpp \
-    heightmap.cpp \
-    camera.cpp \
-    gamewidget.cpp \
-    generatorwindow.cpp \
-    agentwidget.cpp \
-    agents/coastlineagent.cpp \
-    agents/mountainagent.cpp \
-    agents/smoothagent.cpp \
-    noise/noise.cpp \
-    noise/octave.cpp \
-    generator.cpp
+	main.cpp \
+	heightmap.cpp \
+	camera.cpp \
+	gamewidget.cpp \
+	generatorwindow.cpp \
+	agentwidget.cpp \
+	agents/coastlineagent.cpp \
+	agents/mountainagent.cpp \
+	agents/smoothagent.cpp \
+	noise/noise.cpp \
+	noise/octave.cpp \
+	generator.cpp
 
-QMAKE_CXXFLAGS+=-fopenmp
-QMAKE_LFLAGS+=-fopenmp
+unix{
+	QMAKE_CXXFLAGS+=-fopenmp
+	QMAKE_LFLAGS+=-fopenmp
+}
+win32{
+	QMAKE_CXXFLAGS += -openmp
+}
 
-QMAKE_CXXFLAGS+=-openmp
-QMAKE_LFLAGS+=-openmp
-    
+
 target.path = $$[QT_INSTALL_EXAMPLES]/gui/openglwindow
 QT += opengl
 INSTALLS += target
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11
 
 HEADERS += \
-    heightmap.h \
-    camera.h \
-    gamewidget.h \
-    generatorwindow.h \
-    agents/iagent.h \
-    agentwidget.h \
-    agents/coastlineagent.h \
-    agents/mountainagent.h \
-    agents/smoothagent.h \
-    noise/noise.h \
-    noise/octave.h \
-    noise/random.h \
-    generator.h \
-    agents/abstractagent.h
+	heightmap.h \
+	camera.h \
+	gamewidget.h \
+	generatorwindow.h \
+	agents/iagent.h \
+	agentwidget.h \
+	agents/coastlineagent.h \
+	agents/mountainagent.h \
+	agents/smoothagent.h \
+	noise/noise.h \
+	noise/octave.h \
+	noise/random.h \
+	generator.h \
+	agents/abstractagent.h
 
 
 RESOURCES += \
-    gestionnaire.qrc
+	gestionnaire.qrc

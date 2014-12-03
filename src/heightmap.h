@@ -76,6 +76,11 @@ public:
 
     void save(QFile& file);
 
+
+    void setComputeNormals(bool b);
+
+    void computeNormals();
+
 private:
     void update(GameWidget* gl);
     void updateNormal(int x, int z);
@@ -118,6 +123,8 @@ private:
     // La rotation sur l'axe y
     float m_rotation;
     float m_scale;
+
+    bool m_computeNormals = true;
 
     bool m_isDirty;
 };
