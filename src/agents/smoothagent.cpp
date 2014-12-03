@@ -38,30 +38,31 @@ void SmoothAgent::run()
             {1, -1}, {1, 0}, {1, 1},
         };
         int r = std::round(7.0f * (float)rand() / (float)RAND_MAX);
-        int dx = directions[r][0];
-        int dy = directions[r][1];
+
+        int neighbors = 2;
+
+
+        int dx = directions[r][0]*neighbors;
+        int dy = directions[r][1]*neighbors;
 
         m_x = std::max(std::min(m_x + dx, size - 1), 0);
         m_y = std::max(std::min(m_y + dy, size - 1), 0);
 
-        float height = 0.0f;
-        int count = 0;
-        int neighbors = 2;
+
+
+
 
         for (int i = -neighbors; i <= neighbors; ++i) {
             for (int j = -neighbors; j <= neighbors; ++j) {
                 int newX = m_x + i;
                 int newY = m_y + j;
-                if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)
-                        && ((i + j) <= neighbors)) {
-                    height += m_world->get(newX, newY);
-                    count++;
+                if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
+                    smooth(newX, newY);
                 }
             }
         }
-        height += 3 * m_world->get(m_x, m_y);
 
-        m_world->set(m_x, m_y, height / (float)(count + 3));
+
     }
     m_life++;
 
@@ -69,6 +70,28 @@ void SmoothAgent::run()
         m_x = m_start_x;
         m_y = m_start_y;
     }
+}
+
+void SmoothAgent::smooth(int x, int y) {
+    int count = 0;
+    int neighbors = 2;
+    float height = 0.0f;
+    int size = m_world->getSize();
+
+    for (int i = -neighbors; i <= neighbors; ++i) {
+        for (int j = -neighbors; j <= neighbors; ++j) {
+            int newX = x + i;
+            int newY = y + j;
+            if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)
+                && ((i + j) <= neighbors)) {
+                height += m_world->get(newX, newY);
+                count++;
+            }
+        }
+    }
+    height += 2 * m_world->get(x, y);
+
+    m_world->set(x, y, height / (float)(count + 2));
 }
 
 bool SmoothAgent::isDead()

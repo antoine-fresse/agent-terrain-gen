@@ -60,23 +60,26 @@ void MountainAgent::run()
         m_x = std::max(std::min(m_x + m_directions[m_directionIndex][0], size - 1), 0);
         m_y = std::max(std::min(m_y + m_directions[m_directionIndex][1], size - 1), 0);
 
+
         if (m_world->get(m_x, m_y) > 1) {
             float width = getValue("largeur");
             float slope = getValue("pente");
 
-            if(m_variationHauteur = 0){
-                m_height = m_height - 1.0 ;
-                if(m_height < getValue("max_hauteur")-getValue("variation_hauteur")){
-                    m_height = getValue("max_hauteur")-getValue("variation_hauteur");
+            if (m_variationHauteur == 0){
+                m_height = m_height - (float)slope / (float)width;
+                if (m_height < getValue("max_hauteur") - getValue("variation_hauteur")){
+                    m_height = getValue("max_hauteur") - getValue("variation_hauteur");
                     m_variationHauteur = 1;
                 }
-            }else{
-                m_height = m_height + 1.0;
-                if(m_height > getValue("max_hauteur")){
+            }
+            else{
+                m_height = m_height + (float)slope / (float)width;
+                if (m_height > getValue("max_hauteur")){
                     m_height = getValue("max_hauteur");
                     m_variationHauteur = 0;
                 }
             }
+
             float height = m_height;
 
             int dirX = m_directions[m_directionIndex][1];
@@ -89,13 +92,14 @@ void MountainAgent::run()
                     float dst = getSquareDistance(newX, newY, m_x, m_y);
                     if (dst < (width * width)) {
                         int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
-                        if (dst > (slope * slope)) {
+                        //if (dst > (slope * slope)) {
                             dst = std::sqrt(dst);
-                            newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
-                        }
-                        if (newHeight > m_world->get(newX, newY)) {
-                            m_world->set(newX, newY, newHeight /*+ m_noise.getNoise(newX, newY) * 2.0*/);
-                        }
+                            //newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
+                            newHeight = (width - std::abs(dr))/width * height;
+                        //}
+
+                        m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
+
                     }
                 }
             }
@@ -107,21 +111,67 @@ void MountainAgent::run()
                         float dst = getSquareDistance(newX, newY, m_x, m_y);
                         if (dst < (width * width)) {
                             int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
-                            if (dst > (slope * slope)) {
+                            //if (dst > (slope * slope)) {
                                 dst = std::sqrt(dst);
-                                newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
-                            }
-                            if (newHeight > m_world->get(newX, newY)) {
-                                m_world->set(newX, newY, newHeight);
-                            }
+                                //newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
+                                newHeight = (width - std::abs(dr))/width * height;
+                            //}
+                            m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
                         }
                     }
                 }
             }
+            smoothArea(m_x, m_y);
         }
     }
     m_ticks++;
     m_life++;
+}
+
+void MountainAgent::smoothArea(int x, int y) {
+
+
+    int neighbors = getValue("largeur");
+
+    int size = m_world->getSize();
+
+    for (int i = -neighbors; i <= neighbors; ++i) {
+        for (int j = -neighbors; j <= neighbors; ++j) {
+            int newX = x + i;
+            int newY = y + j;
+            if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
+                smooth(newX, newY);
+            }
+        }
+    }
+
+
+}
+
+void MountainAgent::smooth(int x, int y) {
+    int count = 0;
+    int neighbors = 2;
+    float height = 0.0f;
+    int size = m_world->getSize();
+    float h = m_world->get(x, y);
+
+    if(h <= 1)
+        return;
+    for (int i = -neighbors; i <= neighbors; ++i) {
+        for (int j = -neighbors; j <= neighbors; ++j) {
+            int newX = x + i;
+            int newY = y + j;
+            if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
+                height += m_world->get(newX, newY);
+                count++;
+            }
+        }
+    }
+
+    height += 4 * h;
+    count += 4;
+
+    m_world->set(x, y, height / (float)(count));
 }
 
 bool MountainAgent::isDead()

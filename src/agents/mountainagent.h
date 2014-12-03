@@ -16,6 +16,8 @@ public:
     void spawn(HeightMap* world);
     void run();
     bool isDead();
+	void smoothArea(int x, int y);
+	void smooth(int x, int y);
 
     QString getTypeName() const;
     std::vector<QString> getProperties();
