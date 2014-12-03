@@ -99,6 +99,7 @@ void MountainAgent::run()
                         //}
 
                         m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
+                        m_world->setMaterial(newX, newY, HeightMap::Snow);
 
                     }
                 }
@@ -117,6 +118,7 @@ void MountainAgent::run()
                                 newHeight = (width - std::abs(dr))/width * height;
                             //}
                             m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
+                            m_world->setMaterial(newX, newY, HeightMap::Snow);
                         }
                     }
                 }

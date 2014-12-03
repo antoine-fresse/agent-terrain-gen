@@ -1,7 +1,11 @@
 #version 330
 
-in highp float posAttr;
-in vec3 normalAttr;
+layout(location = 0) in highp float posAttr;
+layout(location = 1) in highp int materialAttr;
+layout(location = 2) in vec3 normalAttr;
+
+
+out vec4 ex_weights;
 out float ex_height;
 out vec2 ex_textCoord;
 out vec3 ex_normal;
@@ -26,6 +30,9 @@ void main() {
 	mat4 normal_matrix = transpose(inverse(view_matrix*model_matrix));
 	eye_position = vec3(view_matrix*model_matrix*ex_pos);
 	eye_normal = normalize(vec3(normal_matrix*vec4(ex_normal,0.0)));
-
+    
+    ex_weights = vec4(0, 0, 0, 0);
+    ex_weights[materialAttr] = 1.0;
+    
 	gl_Position = proj_matrix*vec4(eye_position, 1.0);
 }
