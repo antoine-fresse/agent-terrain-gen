@@ -34,7 +34,7 @@ HeightMap::HeightMap(int size)
     m_materials = new GLint[m_nbPoints * m_nbPoints];
     m_normals = new GLfloat[3 * m_nbPoints * m_nbPoints];
     m_indices = new GLuint[3 * 2 * (m_nbPoints - 1) * (m_nbPoints - 1)];
-
+    m_maxHeight = 100.0;
     // Remplissage initiale de la heightmap
     int nbVertices = 0;
     for (int z = 0; z < m_nbPoints; ++z) {
@@ -44,7 +44,7 @@ HeightMap::HeightMap(int size)
     }
     // Remplissage des matériaux
     for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
-        m_materials[i] = 1;
+        m_materials[i] = HeightMap::Water;
     }
     // Remplissage des normales
     #pragma omp parallel
@@ -118,7 +118,7 @@ void HeightMap::initialize(GameWidget* gl)
     m_grassTexture->setWrapMode(QOpenGLTexture::Repeat);
     m_rockTexture = new QOpenGLTexture(QImage(":/textures/rock.png"));
     m_rockTexture->setWrapMode(QOpenGLTexture::Repeat);
-    m_snowTexture = new QOpenGLTexture(QImage(":/textures/snow.png"));
+    m_snowTexture = new QOpenGLTexture(QImage(":/textures/snow.jpg"));
     m_snowTexture->setWrapMode(QOpenGLTexture::Repeat);
 
     m_program = new QOpenGLShaderProgram(gl);
@@ -142,7 +142,7 @@ void HeightMap::initialize(GameWidget* gl)
     m_program->bind();
     m_program->setUniformValue("nbVertex", getSize());
     m_program->setUniformValue("pointPerTexture", 4.0f);
-    m_program->setUniformValue("maxHeight", (float)250); // TODO
+    m_program->setUniformValue("maxHeight", m_maxHeight); // TODO
     m_program->setUniformValue("waterSampler", 0);
     m_program->setUniformValue("sandSampler", 1);
     m_program->setUniformValue("grassSampler", 2);
@@ -257,6 +257,10 @@ void HeightMap::set(int x, int z, float height)
     if ((x >= m_nbPoints) || (z >= m_nbPoints)) {
         throw std::runtime_error("HeightMap::set : Erreur de coordonées");
     }
+
+    if(height > m_maxHeight)
+        m_maxHeight = height;
+
     m_vertices[(z * m_nbPoints + x)] = height;
 
     if(m_computeNormals){
@@ -283,12 +287,20 @@ void HeightMap::set(int x, int z, float height)
 
 void HeightMap::setMaterial(int x, int z, Material mat)
 {
-    if ((x >= m_nbPoints) || (z >= m_nbPoints)) {
-        throw std::runtime_error("HeightMap::set : Erreur de coordonées");
+    if ((x >= m_nbPoints) || (z >= m_nbPoints) || x<0 || z<0) {
+        throw std::runtime_error("HeightMap::setMaterial : Erreur de coordonées");
     }
     m_materials[(z * m_nbPoints + x)] = mat;
 
     m_isMaterialDirty = true;
+}
+
+HeightMap::Material HeightMap::getMaterial(int x, int z){
+    if ((x >= m_nbPoints) || (z >= m_nbPoints) || x<0 || z<0) {
+        throw std::runtime_error("HeightMap::getMaterial : Erreur de coordonées");
+    }
+
+    return (HeightMap::Material) m_materials[(z * m_nbPoints + x)];
 }
 
 float HeightMap::get(int x, int z)
@@ -376,7 +388,7 @@ QMatrix4x4 HeightMap::getTransform()
 void HeightMap::reset()
 {
     memset(m_vertices, 0, m_nbPoints * m_nbPoints * sizeof(GLfloat));
-
+    m_maxHeight = 100.0;
     #pragma omp parallel
     {
         #pragma omp for
@@ -397,12 +409,17 @@ void HeightMap::reset()
                 m_normals[3 * (y * m_nbPoints + x) + 1] = 1.0f;
                 m_normals[3 * (y * m_nbPoints + x) + 2] = 1.0f;
                 updateNormal(x,y);
+
             }
+        }
+        #pragma omp for
+        for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
+            m_materials[i] = HeightMap::Water;
         }
     }
 
-
     m_isDirty = true;
+    m_isMaterialDirty = true;
 }
 
 void HeightMap::updateNormal(int x, int y)
@@ -498,4 +515,59 @@ void HeightMap::save(QFile& file)
     }
 
     //file.resize(m_nbPoints * m_nbPoints * sizeof(short));
+}
+
+
+std::pair<int, int> HeightMap::getRandomInlandPosition()
+{
+    while (1) {
+        int x = rand()%m_nbPoints;
+        int y = rand()%m_nbPoints;
+        if (getMaterial(x, y) != HeightMap::Water) {
+            return std::make_pair<int, int>(std::move(x), std::move(y));
+        }
+    }
+    return std::make_pair<int, int>(0, 0);
+}
+
+std::pair<int, int> HeightMap::getRandomPosition()
+{
+    return std::make_pair<int, int>(rand()%m_nbPoints, rand()%m_nbPoints);
+}
+
+
+void HeightMap::smoothAll(){
+
+    float *mapCpy = new float[m_nbPoints*m_nbPoints];
+
+    memcpy(mapCpy, m_vertices, m_nbPoints*m_nbPoints*sizeof(float));
+
+    int neighbors = 2;
+    for(int y=0; y<m_nbPoints ;y++){
+        for(int x=0; x<m_nbPoints ;x++){
+
+
+
+            int count = 0;
+            float height = 0.0;
+            for (int i = -neighbors; i <= neighbors; ++i) {
+                for (int j = -neighbors; j <= neighbors; ++j) {
+                    int newX = x + i;
+                    int newY = y + j;
+                    if ((newX >= 0) && (newY >= 0) && (newX < m_nbPoints) && (newY < m_nbPoints)) {
+                        height += mapCpy[(newY * m_nbPoints + newX)];
+                        count++;
+                    }
+                }
+            }
+            height += 2 * mapCpy[(y * m_nbPoints + x)];
+
+            set(x, y, height / (float)(count + 2));
+
+
+        }
+    }
+
+    delete[] mapCpy;
+
 }

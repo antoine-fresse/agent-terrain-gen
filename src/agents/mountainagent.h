@@ -16,8 +16,8 @@ public:
     void spawn(HeightMap* world);
     void run();
     bool isDead();
-	void smoothArea(int x, int y);
-	void smooth(int x, int y);
+    void smoothArea(int x, int y);
+    void smooth(int x, int y);
 
     QString getTypeName() const;
     std::vector<QString> getProperties();
@@ -40,6 +40,13 @@ private:
 
     float m_height;
     int m_variationHauteur;
+
+    float m_maxHeight;
+    int m_slope;
+    int m_width;
+
+    int m_maxLife;
+    int m_tick;
 
 
     SimplexNoise m_noise;

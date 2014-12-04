@@ -30,26 +30,32 @@ MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_n
 void MountainAgent::spawn(HeightMap* world)
 {
     m_world = world;
-    m_height = getValue("max_hauteur") - ((float)rand() / (float)RAND_MAX)*getValue("variation_hauteur");
-    m_variationHauteur = std::round( (float)rand()/(float)RAND_MAX );
 
-    //std::cout << m_height << std::endl;
+    m_variationHauteur = getValue("variation_hauteur");
 
-    int size = m_world->getSize();
-    m_x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
-    m_y = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
+    m_slope = getValue("pente");
+    m_width = getValue("largeur");
+    m_maxHeight = (float)getValue("max_hauteur");
 
-    m_directionIndex = std::round(7.0f * (float)rand() / (float)RAND_MAX);
+    m_height = m_maxHeight - (float)(rand()%m_variationHauteur);
+    m_maxLife = getValue("life");
+    m_tick = getValue("tick");
+
+    auto pos = m_world->getRandomInlandPosition();
+    m_x = pos.first;
+    m_y = pos.second;
+
+    m_directionIndex = rand()%8;
 }
 
 void MountainAgent::run()
 {
     if (m_world != nullptr) {
         int size = m_world->getSize();
-        if (m_ticks == getValue("tick")) {
+        if (m_ticks == m_tick) {
             m_directionIndex++;
             m_directionIndex = m_directionIndex % 8;
-        } else if (m_ticks >= (2 * getValue("tick"))) {
+        } else if (m_ticks >= (2 * m_tick)) {
             m_directionIndex--;
             if (m_directionIndex < 0) {
                 m_directionIndex += 8;
@@ -61,68 +67,46 @@ void MountainAgent::run()
         m_y = std::max(std::min(m_y + m_directions[m_directionIndex][1], size - 1), 0);
 
 
-        if (m_world->get(m_x, m_y) > 1) {
-            float width = getValue("largeur");
-            float slope = getValue("pente");
+        if (m_world->getMaterial(m_x, m_y) != HeightMap::Water) {
+
 
             if (m_variationHauteur == 0){
-                m_height = m_height - (float)slope / (float)width;
-                if (m_height < getValue("max_hauteur") - getValue("variation_hauteur")){
-                    m_height = getValue("max_hauteur") - getValue("variation_hauteur");
+                m_height = m_height - (float)m_slope / (float)m_width;
+                if (m_height < (m_maxHeight - (float)m_variationHauteur)){
+                    m_height = m_maxHeight - (float)m_variationHauteur;
                     m_variationHauteur = 1;
                 }
             }
             else{
-                m_height = m_height + (float)slope / (float)width;
-                if (m_height > getValue("max_hauteur")){
-                    m_height = getValue("max_hauteur");
+                m_height = m_height + (float)m_slope / (float)m_width;
+                if (m_height > m_maxHeight){
+                    m_height = m_maxHeight;
                     m_variationHauteur = 0;
                 }
             }
 
-            float height = m_height;
-
             int dirX = m_directions[m_directionIndex][1];
             int dirY = -m_directions[m_directionIndex][0];
-
-            for (int dr = -width; dr < width; ++dr) {
+            bool diag = false;// (dirY != 0) && (dirX != 0);
+            for (int dr = -m_width; dr < m_width; ++dr) {
                 int newX = m_x + dirX * dr;
-                int newY = m_y + dirY * dr;
-                if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
-                    float dst = getSquareDistance(newX, newY, m_x, m_y);
-                    if (dst < (width * width)) {
-                        int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
-                        //if (dst > (slope * slope)) {
-                            dst = std::sqrt(dst);
-                            //newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
-                            newHeight = (width - std::abs(dr))/width * height;
-                        //}
-
-                        m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
-                        m_world->setMaterial(newX, newY, HeightMap::Snow);
-
-                    }
-                }
-            }
-            if ((dirY != 0) && (dirX != 0)) {
-                for (int dr = -width; dr < width; ++dr) {
-                    int newX = m_x + dirX * dr;
-                    int newY = m_y + dirY * dr + 1;
+                for(int k=0 ; k< (diag ? 2 : 1) ; k++){
+                    int newY = m_y + dirY*dr + k;
                     if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
                         float dst = getSquareDistance(newX, newY, m_x, m_y);
-                        if (dst < (width * width)) {
-                            int newHeight = height;// + m_noise.getNoise(m_ticks, 0);
-                            //if (dst > (slope * slope)) {
-                                dst = std::sqrt(dst);
-                                //newHeight = (float)height * (1.0 - (float)(dst - slope) / (float)(width - slope));
-                                newHeight = (width - std::abs(dr))/width * height;
-                            //}
-                            m_world->set(newX, newY, m_world->get(newX, newY) + newHeight);
+                        if (dst < (m_width * m_width)) {
+                            dst = std::sqrt(dst);
+                            //newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
+                            float newHeight = m_world->get(newX, newY) + ((float)m_width - (float)std::abs(dr))/(float)m_width * m_height;
+                            newHeight = std::min(newHeight, m_maxHeight);
+                            m_world->set(newX, newY, newHeight);
                             m_world->setMaterial(newX, newY, HeightMap::Snow);
+
                         }
                     }
                 }
             }
+
             smoothArea(m_x, m_y);
         }
     }
@@ -133,7 +117,7 @@ void MountainAgent::run()
 void MountainAgent::smoothArea(int x, int y) {
 
 
-    int neighbors = getValue("largeur");
+    int neighbors = m_width;
 
     int size = m_world->getSize();
 
@@ -178,7 +162,7 @@ void MountainAgent::smooth(int x, int y) {
 
 bool MountainAgent::isDead()
 {
-    return m_life >= getValue("life");
+    return m_life >= m_maxLife;
 }
 
 QString MountainAgent::getTypeName() const

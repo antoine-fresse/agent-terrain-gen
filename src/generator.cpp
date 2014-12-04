@@ -105,6 +105,7 @@ void Generator::tick()
         } else {
             m_isRunning = false;
             m_onFinish();
+            m_heightmap->smoothAll();
             m_heightmap->computeNormals();
         }
     }
@@ -128,6 +129,8 @@ void Generator::runAll()
         tick();
     }
     m_heightmap->setComputeNormals(true);
+    m_heightmap->smoothAll();
+
     m_heightmap->computeNormals();
 }
 

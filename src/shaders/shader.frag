@@ -10,9 +10,9 @@ uniform mat4 view_matrix;
 uniform highp int nbVertex;
 
 float sandLimit = 0.05;
-float grassLimit = 0.4;
+float grassLimit = 0.2;
 float rockLimit = 0.7;
-float snowLimit = 1.0;
+float snowLimit = 0.95;
 
 vec3 light_spec = vec3(1.0,1.0,1.0);
 vec3 light_diff = vec3(1.0,1.0,1.0);
@@ -43,13 +43,26 @@ void main() {
 		vec4 snow = texture2D(snowSampler, ex_textCoord.xy);
 		vec4 weights;
 
+		/*
 		weights.x = clamp(1.0f - abs(ex_height - sandLimit) / 0.2f, 0.0, 1.0);
 		weights.y = clamp(1.0f - abs(ex_height - grassLimit) / 0.2f, 0.0, 1.0);
 		weights.z = clamp(1.0f - abs(ex_height - rockLimit) / 0.2f, 0.0, 1.0);
 		weights.w = clamp(1.0f - abs(ex_height - snowLimit) / 0.2f, 0.0, 1.0);
         weights = weights / (weights.x + weights.y + weights.z + weights.w);
-		texel = sand * weights.x + grass * weights.y + rock * weights.z + snow * weights.w;
+        */
+		//texel = sand * weights.x + grass * weights.y + rock * weights.z + snow * weights.w;
         
+       
+        
+    	float blendCoef = abs(dot(ex_normal, vec3(0.0,1.0,0.0))); 
+
+    	vec4 texelGrass = mix(rock, grass, blendCoef);
+    	vec4 texelSnow = mix(rock, snow, blendCoef+clamp(0.2,0.0, ex_height-snowLimit));
+    	vec4 texelSand = sand;
+
+    	
+    	texel = mix (texelGrass, texelSnow, clamp(1.0,0.0, ex_height-snowLimit) );
+    	texel = mix(texelSand, texel,  ex_height-grassLimit+0.05  );
         /*weights = ex_weights;
 		weights = weights / (weights.x + weights.y + weights.z + weights.w);
 		texel = water * weights.x + grass * weights.y + sand * weights.z + snow * weights.w;*/
@@ -68,8 +81,8 @@ void main() {
 	// Specular
 	vec3 reflection_eye = reflect(-direction, eye_normal);
 	float dot_spec = max(dot(reflection_eye, normalize(-eye_position)),0.0);
-	float spec_factor = pow(dot_spec, 1000.0);
-	vec3 Is = light_spec * vec3(0.0,0.0,0.0) * spec_factor;
+	float spec_factor = pow(dot_spec, 100.0);
+	vec3 Is = light_spec * vec3(texel)/10.0 * spec_factor;
 
 	out_color = vec4(Ia+Id+Is, 1.0);
 	//out_color = texel;

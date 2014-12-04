@@ -15,7 +15,7 @@ public:
     void spawn(HeightMap* world);
     void run();
     bool isDead();
-	void smooth(int x, int y);
+    void smooth(int x, int y);
 
     QString getTypeName() const;
     std::vector<QString> getProperties();
@@ -31,6 +31,12 @@ private:
 
     int m_start_x;
     int m_start_y;
+
+    int m_maxLife;
+    int m_resets;
+
+
+    int m_directions[8][2];
 };
 
 #endif // SMOOTHAGENT_H

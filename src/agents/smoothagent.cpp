@@ -13,18 +13,28 @@ SmoothAgent::SmoothAgent() : m_life{0}
     setValue("count", 3000);
     setValue("life", 1000);
     setValue("nb_resets", 1);
+    int directions[8][2] = {
+           {-1, 0}, {-1, -1}, {-1, 1},
+           {0, -1}, {0, 1},
+           {1, -1}, {1, 0}, {1, 1},
+       };
+    memcpy(m_directions, directions, sizeof(directions));
 }
 
 void SmoothAgent::spawn(HeightMap* world)
 {
     m_world = world;
 
-    int size = m_world->getSize();
-    m_x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
-    m_y = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
+    auto pos = m_world->getRandomInlandPosition();
+
+    m_x = pos.first ;
+    m_y = pos.second;
 
     m_start_x = m_x;
     m_start_y = m_y;
+
+    m_maxLife = getValue("life");
+    m_resets = getValue("nb_resets");
 }
 
 void SmoothAgent::run()
@@ -32,25 +42,13 @@ void SmoothAgent::run()
     if (m_world != nullptr) {
         int size = m_world->getSize();
 
-        int directions[8][2] = {
-            {-1, 0}, {-1, -1}, {-1, 1},
-            {0, -1}, {0, 1},
-            {1, -1}, {1, 0}, {1, 1},
-        };
-        int r = std::round(7.0f * (float)rand() / (float)RAND_MAX);
+
+        int r = rand() % 8;
 
         int neighbors = 2;
 
-
-        int dx = directions[r][0]*neighbors;
-        int dy = directions[r][1]*neighbors;
-
-        m_x = std::max(std::min(m_x + dx, size - 1), 0);
-        m_y = std::max(std::min(m_y + dy, size - 1), 0);
-
-
-
-
+        int dx = m_directions[r][0]*neighbors;
+        int dy = m_directions[r][1]*neighbors;
 
         for (int i = -neighbors; i <= neighbors; ++i) {
             for (int j = -neighbors; j <= neighbors; ++j) {
@@ -62,11 +60,14 @@ void SmoothAgent::run()
             }
         }
 
+        m_x = std::max(std::min(m_x + dx, size - 1), 0);
+        m_y = std::max(std::min(m_y + dy, size - 1), 0);
+
 
     }
     m_life++;
 
-    if(m_life % (getValue("life")/(getValue("nb_resets")+1)) == 0){
+    if(m_life % (m_maxLife/(m_resets+1)) == 0){
         m_x = m_start_x;
         m_y = m_start_y;
     }
@@ -96,7 +97,7 @@ void SmoothAgent::smooth(int x, int y) {
 
 bool SmoothAgent::isDead()
 {
-    return m_life >= getValue("life");
+    return m_life >= m_maxLife;
 }
 
 QString SmoothAgent::getTypeName() const

@@ -58,6 +58,9 @@ public:
      * @param height La nouvelle hauteur du sommet.
      */
     void set(int x, int z, float height);
+
+    Material getMaterial(int x, int z);
+
     void setMaterial(int x, int z, Material mat);
     /**
      * @brief Renvoie la hauteur de la heightmap pour un certain point dans l'espace.
@@ -88,6 +91,11 @@ public:
     void setComputeNormals(bool b);
 
     void computeNormals();
+
+    std::pair<int, int> getRandomInlandPosition();
+    std::pair<int, int> getRandomPosition();
+
+    void smoothAll();
 
 private:
     void update(GameWidget* gl, bool updateMaterial);
@@ -138,6 +146,8 @@ private:
     float m_scale;
 
     bool m_computeNormals = true;
+
+    float m_maxHeight;
 
     bool m_isDirty;
     bool m_isMaterialDirty;

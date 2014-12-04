@@ -27,13 +27,13 @@ void CoastLineAgent::spawn(HeightMap* world)
 
     m_x = size / 2;
     m_y = size / 2;
-
+    m_maxLife = getValue("vertice limit");
     m_vertices = getValue("vertice limit");
 
-    auto attractor = getRandomPosition();
+    auto attractor = m_world->getRandomPosition();
     m_attractorX = std::get<0>(attractor);
     m_attractorY = std::get<1>(attractor);
-    auto repulsor = getRandomPosition();
+    auto repulsor = m_world->getRandomPosition();
     m_repulsorX = std::get<0>(repulsor);
     m_repulsorY = std::get<1>(repulsor);
     auto direction = getRandomDirection();
@@ -46,15 +46,15 @@ void CoastLineAgent::spawn(HeightMap* world, int verticeLimit)
     m_world = world;
     int size = m_world->getSize();
     m_vertices = verticeLimit;
-
+    m_maxLife = 400;
     m_terminal = true;
-    m_x = (size - 1) * (float)rand() / (float)RAND_MAX;
-    m_y = (size - 1) * (float)rand() / (float)RAND_MAX;
+    m_x = rand()%size;
+    m_y = rand()%size;
 
-    auto attractor = getRandomPosition();
+    auto attractor = m_world->getRandomPosition();
     m_attractorX = std::get<0>(attractor);
     m_attractorY = std::get<1>(attractor);
-    auto repulsor = getRandomPosition();
+    auto repulsor = m_world->getRandomPosition();
     m_repulsorX = std::get<0>(repulsor);
     m_repulsorY = std::get<1>(repulsor);
     auto direction = getRandomDirection();
@@ -65,17 +65,18 @@ void CoastLineAgent::spawn(HeightMap* world, int verticeLimit)
 void CoastLineAgent::run()
 {
     if (m_world != nullptr) {
-        if ((m_life == 400) && (m_terminal) && (m_vertices > 2)) {
-            m_life = 0;
+        if ((m_life == m_maxLife) && (m_terminal) && (m_maxLife > 2)) {
+            m_life++;
             m_terminal = false;
             m_children[0] = copyCoastLine();
             m_children[0]->spawn(m_world, m_vertices / 2);
+            m_children[0]->m_maxLife = m_maxLife/2;
             m_children[0]->m_x = m_x;
             m_children[0]->m_y = m_y;
-            //m_children[0]->m_life =
 
             m_children[1] = copyCoastLine();
             m_children[1]->spawn(m_world, m_vertices / 2);
+            m_children[1]->m_maxLife = m_maxLife/2;
             m_children[1]->m_x = m_x;
             m_children[1]->m_y = m_y;
         }
@@ -98,8 +99,8 @@ void CoastLineAgent::run()
                 int newX = m_x + directions[i][0];
                 int newY = m_y + directions[i][1];
                 if ((newX >= 0) && (newY >= 0) && (newX < size) && (newY < size)) {
-                    float score = getScore(m_x + directions[i][0], m_y + directions[i][1]);
-                    if (m_world->get(newX, newY) == 0.0) {
+                    float score = getScore(newX, newY);
+                    if (m_world->getMaterial(newX, newY) == HeightMap::Water) {
                         if ((maxIndex == -1) || (score > maxScore)) {
                             maxScore = score;
                             maxIndex = i;
@@ -114,7 +115,7 @@ void CoastLineAgent::run()
                     }
                 }
             }
-            if ((maxIndex > -1) && ((neighborLand > 0) || m_root)) {
+            if ((maxIndex > -1) && ((neighborLand > 1) || m_root)) {
                 m_x = std::max(std::min(m_x + directions[maxIndex][0], size - 1), 0);
                 m_y = std::max(std::min(m_y + directions[maxIndex][1], size - 1), 0);
 
@@ -123,25 +124,29 @@ void CoastLineAgent::run()
                 //int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
                 int height = minHeight;
                 m_world->set(m_x, m_y, height);
-                m_world->setMaterial(m_x, m_y, HeightMap::Grass);
+                m_world->setMaterial(m_x, m_y, HeightMap::Sand);
+
+
                 //m_vertices--;
             } else {
                 m_x = std::max(std::min(m_x + directions[fallbackIndex][0], size - 1), 0);
                 m_y = std::max(std::min(m_y + directions[fallbackIndex][1], size - 1), 0);
+
             }
+            m_life++;
         } else {
             for (int i = 0; i < 2; ++i) {
                 m_children[i]->run();
             }
         }
     }
-    m_life++;
+
 }
 
 bool CoastLineAgent::isDead()
 {
     if (m_terminal) {
-        return m_life >= 401;
+        return m_life >= m_maxLife+1;
     } else {
         return m_children[0]->isDead() && m_children[1]->isDead();
     }
@@ -189,25 +194,6 @@ float CoastLineAgent::getScore(int x, int y)
     return repulsorScore - attratorScore - 3.0 * borderScore;
 }
 
-std::pair<int, int> CoastLineAgent::getRandomPosition()
-{
-    int size = m_world->getSize();
-    return std::make_pair<int, int>((float)(size - 1) * (float)rand() / (float)RAND_MAX,
-                                    (float)(size - 1) * (float)rand() / (float)RAND_MAX);
-}
-
-std::pair<int, int> CoastLineAgent::getRandomInlandPosition()
-{
-    int size = m_world->getSize();
-    while (1) {
-        int x = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
-        int y = (float)(size - 1) * (float)rand() / (float)RAND_MAX;
-        if (m_world->get(x, y) > 0) {
-            return std::make_pair<int, int>(std::move(x), std::move(y));
-        }
-    }
-    return std::make_pair<int, int>(0, 0);
-}
 
 std::pair<int, int> CoastLineAgent::getRandomDirection()
 {
@@ -216,7 +202,7 @@ std::pair<int, int> CoastLineAgent::getRandomDirection()
         {0, -1}, {0, 1},
         {1, -1}, {1, 0}, {1, 1},
     };
-    int r = std::round(7.0f * (float)rand() / (float)RAND_MAX);
+    int r = rand()%8;
     int x = directions[r][0];
     int y = directions[r][1];
     return std::make_pair<int, int>(std::move(x), std::move(y));

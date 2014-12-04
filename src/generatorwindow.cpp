@@ -46,7 +46,7 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
         m_stepButton->setDisabled(false);
     });
 
-    m_animationTimer.setInterval(10);
+    m_animationTimer.setInterval(1);
     m_generator.connect(&m_animationTimer, &QTimer::timeout, &m_generator, &Generator::tick);
 }
 
@@ -74,7 +74,7 @@ void GeneratorWindow::createView()
     format.setVersion(3, 3);
     format.setProfile(QGLFormat::CoreProfile);
 
-    m_gameWidget = new GameWidget(60);
+    m_gameWidget = new GameWidget(120);
     m_gameWidget->setFormat(format);
 
     m_runButton = new QPushButton("Run");
