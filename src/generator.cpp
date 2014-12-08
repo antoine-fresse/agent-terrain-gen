@@ -192,3 +192,8 @@ void Generator::setOnFinish(std::function<void()> onFinish)
 {
     m_onFinish = onFinish;
 }
+
+int Generator::getPhasesCount(){
+    return m_phaseAgents.size();
+
+}

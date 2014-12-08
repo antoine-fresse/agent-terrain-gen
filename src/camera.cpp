@@ -2,7 +2,7 @@
 
 #include <cmath>
 #include <QKeyEvent>
-
+#include <iostream>
 static const float pi = 4 * std::atan(1);
 
 float degToRad(float x) {
@@ -13,8 +13,8 @@ float radToDeg(float x) {
     return x * 180.0f / pi;
 }
 
-Camera::Camera() : m_speed{600.0f}, m_phi{degToRad(-33.0f)}, m_theta{degToRad(-10.0f)},
-                    m_thetaMax{degToRad(75.0f)}, m_sensi{0.5f}, m_position{0.0f, 500.0f, 0.0f},
+Camera::Camera() : m_speed{600.0f}, m_phi{4.72111f}, m_theta{-1.1781f},
+                    m_thetaMax{degToRad(75.0f)}, m_sensi{0.5f}, m_position{2560.0f, 5000.0f, 0.0f},
                     m_direction{Direction::NONE}, m_mousePressed{false}, m_isDirty{true} {
 }
 
@@ -172,7 +172,7 @@ void Camera::mouseMoveEvent(QMouseEvent* event) {
         } else if (m_theta < -m_thetaMax) {
             m_theta = -m_thetaMax;
         }
-
+        //std::cout << "phi : " << m_phi << " m_theta : " << m_theta << std::endl;
         m_isDirty = true;
     }
 }

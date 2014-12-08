@@ -1,0 +1,7 @@
+CoastLine!cohesion:0!count:1!max height:75!min height:60!vertice limit:4000
+newPhase
+Mountain!count:10!largeur:40!life:150!max_hauteur:150!pente:10!tick:20!variation_hauteur:150
+newPhase
+Mountain!count:2!largeur:30!life:150!max_hauteur:450!pente:10!tick:20!variation_hauteur:350
+newPhase
+Smooth!count:1000!life:250!nb_resets:1

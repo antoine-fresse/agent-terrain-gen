@@ -68,8 +68,8 @@ void CoastLineAgent::spawn(HeightMap* world, int verticeLimit)
         m_repulsorX = std::get<0>(repulsor);
         m_repulsorY = std::get<1>(repulsor);
     }else{
-        auto attractor = m_world->getRandomInSeaPosition();
-        auto repulsor = m_world->getRandomInlandPosition();
+        auto attractor = m_world->getRandomPosition();
+        auto repulsor = m_world->getRandomPosition();
 
         m_attractorX = std::get<0>(attractor);
         m_attractorY = std::get<1>(attractor);

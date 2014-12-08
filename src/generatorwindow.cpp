@@ -163,7 +163,7 @@ void GeneratorWindow::genAgentToolBars()
     }
     m_agentWidgets.clear();
     m_agentsToolbar->clear();
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < m_generator.getPhasesCount(); ++i) {
         for (auto& agent : m_generator.getAgents(i)) {
             AgentWidget* widget = new AgentWidget(agent);
             m_agentsToolbar->addWidget(widget);

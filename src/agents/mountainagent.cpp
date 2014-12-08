@@ -53,10 +53,10 @@ void MountainAgent::run()
     if (m_world != nullptr) {
         int size = m_world->getSize();
         if (m_ticks == m_tick) {
-            m_directionIndex+=2;
+            m_directionIndex++;
             m_directionIndex = m_directionIndex % 8;
         } else if (m_ticks >= (2 * m_tick)) {
-            m_directionIndex-=2;
+            m_directionIndex--;
             if (m_directionIndex < 0) {
                 m_directionIndex += 8;
             }
@@ -67,7 +67,7 @@ void MountainAgent::run()
         m_y = std::max(std::min(m_y + m_directions[m_directionIndex][1], size - 1), 0);
 
 
-        if (m_world->getMaterial(m_x, m_y) != HeightMap::Water) {
+        if (true){//m_world->getMaterial(m_x, m_y) != HeightMap::Water) {
 
 
             if (m_variationHauteur == 0){
@@ -87,14 +87,14 @@ void MountainAgent::run()
 
             int dirX = m_directions[m_directionIndex][1];
             int dirY = -m_directions[m_directionIndex][0];
-            bool diag = false;// (dirY != 0) && (dirX != 0);
+            bool diag = (dirY != 0) && (dirX != 0);
             for (int dr = -m_width; dr < m_width; ++dr) {
                 int newX = m_x + dirX * dr;
                 for(int k=0 ; k< (diag ? 2 : 1) ; k++){
                     int newY = m_y + dirY*dr + k;
                     if ((newX >= 0)&& (newX < size) && (newY >= 0) && (newY < size)) { // On est dans les limites
                         float dst = getSquareDistance(newX, newY, m_x, m_y);
-                        if (dst < (m_width * m_width)) {
+                        if (dst < (m_width * m_width) && m_world->getMaterial(newX,newY) != HeightMap::Water) {
                             dst = std::sqrt(dst);
                             //newHeight = ((float)height * (1.0 - (float)(dst - slope) / (float)(width - slope)));
                             float newHeight = m_world->get(newX, newY) + ((float)m_width - (float)std::abs(dr))/(float)m_width * m_height;

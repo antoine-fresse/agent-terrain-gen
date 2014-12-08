@@ -33,7 +33,7 @@ void GameWidget::initializeGL()
     const qreal retinaScale = devicePixelRatio();
     glViewport(0, 0, width() * retinaScale, height() * retinaScale);
 
-    glClearColor(0.0f, 0.0f, 0.75f, 1.0f);
+    glClearColor(153.0/255.0, 217.0/255.0, 234.0/255.0, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
     m_heightmap.initialize(this);
@@ -63,7 +63,6 @@ void GameWidget::paintGL()
         pos.setY(minHeight + 5.0);
     }
     getCamera()->setPosition(pos);
-
     m_heightmap.render(this, getCamera()->getViewMatrix(), getProjectionMatrix());
 }
 

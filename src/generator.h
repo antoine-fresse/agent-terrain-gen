@@ -82,6 +82,8 @@ public:
      */
     void setOnFinish(std::function<void()> onFinish);
 
+    int getPhasesCount();
+
 private:
     /**
      * @brief Crée la liste des agents pour la prochaine étape.
