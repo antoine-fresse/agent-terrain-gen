@@ -10,8 +10,8 @@
 
 SmoothAgent::SmoothAgent() : m_life{0}
 {
-    setValue("count", 3000);
-    setValue("life", 1000);
+    setValue("count", 1000);
+    setValue("life", 250);
     setValue("nb_resets", 1);
     int directions[8][2] = {
            {-1, 0}, {-1, -1}, {-1, 1},
@@ -45,7 +45,7 @@ void SmoothAgent::run()
 
         int r = rand() % 8;
 
-        int neighbors = 2;
+        int neighbors = 1;
 
         int dx = m_directions[r][0]*neighbors;
         int dy = m_directions[r][1]*neighbors;

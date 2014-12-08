@@ -10,8 +10,8 @@
 
 MountainAgent::MountainAgent() : m_life{0}, m_ticks{0}, m_directionIndex{0}, m_noise{1, 1.0, 5000}
 {
-    setValue("max_hauteur", 200);
-    setValue("variation_hauteur", 100);
+    setValue("max_hauteur", 300);
+    setValue("variation_hauteur", 200);
     setValue("count", 10);
     setValue("life", 150);
     setValue("largeur", 30);
@@ -53,10 +53,10 @@ void MountainAgent::run()
     if (m_world != nullptr) {
         int size = m_world->getSize();
         if (m_ticks == m_tick) {
-            m_directionIndex++;
+            m_directionIndex+=2;
             m_directionIndex = m_directionIndex % 8;
         } else if (m_ticks >= (2 * m_tick)) {
-            m_directionIndex--;
+            m_directionIndex-=2;
             if (m_directionIndex < 0) {
                 m_directionIndex += 8;
             }
@@ -107,7 +107,7 @@ void MountainAgent::run()
                 }
             }
 
-            smoothArea(m_x, m_y);
+            //smoothArea(m_x, m_y);
         }
     }
     m_ticks++;

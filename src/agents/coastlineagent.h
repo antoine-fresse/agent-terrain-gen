@@ -50,6 +50,7 @@ private:
     int m_repulsorY;
     int m_maxLife;
 
+
     SimplexNoise m_noise;
 };
 

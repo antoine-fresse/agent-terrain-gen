@@ -520,12 +520,28 @@ void HeightMap::save(QFile& file)
 
 std::pair<int, int> HeightMap::getRandomInlandPosition()
 {
-    while (1) {
+    int tries = 1000;
+    while (tries>0) {
         int x = rand()%m_nbPoints;
         int y = rand()%m_nbPoints;
         if (getMaterial(x, y) != HeightMap::Water) {
             return std::make_pair<int, int>(std::move(x), std::move(y));
         }
+        tries--;
+    }
+    return std::make_pair<int, int>(m_nbPoints/2, m_nbPoints/2);
+}
+
+std::pair<int, int> HeightMap::getRandomInSeaPosition()
+{
+    int tries = 1000;
+    while (tries>0) {
+        int x = rand()%m_nbPoints;
+        int y = rand()%m_nbPoints;
+        if (getMaterial(x, y) == HeightMap::Water) {
+            return std::make_pair<int, int>(std::move(x), std::move(y));
+        }
+        tries--;
     }
     return std::make_pair<int, int>(0, 0);
 }
@@ -534,6 +550,7 @@ std::pair<int, int> HeightMap::getRandomPosition()
 {
     return std::make_pair<int, int>(rand()%m_nbPoints, rand()%m_nbPoints);
 }
+
 
 
 void HeightMap::smoothAll(){

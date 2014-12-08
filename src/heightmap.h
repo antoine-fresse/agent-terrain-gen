@@ -93,6 +93,7 @@ public:
     void computeNormals();
 
     std::pair<int, int> getRandomInlandPosition();
+    std::pair<int, int> getRandomInSeaPosition();
     std::pair<int, int> getRandomPosition();
 
     void smoothAll();

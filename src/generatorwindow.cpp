@@ -29,11 +29,15 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
     try {
         m_generator.load("temp_conf");
     } catch (...) {
+
+
         m_generator.addAgent(0, new CoastLineAgent());
-        m_generator.addAgent(1, new SmoothAgent());
         m_generator.addAgent(1, new MountainAgent());
+        m_generator.addAgent(2, new MountainAgent());
+        m_generator.addAgent(3, new SmoothAgent());
         // AJOUTER AGENTS ICI
     }
+
 
     setWindowTitle("Generateur");
     createView();

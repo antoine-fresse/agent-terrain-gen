@@ -7,8 +7,9 @@
 #include "agents/smoothagent.h"
 
 #include <QFile>
+#include <iostream>
 
-Generator::Generator() : m_heightmap{nullptr}, m_phaseAgents(3), m_isRunning{false},
+Generator::Generator() : m_heightmap{nullptr}, m_phaseAgents(0), m_isRunning{false},
                         m_hasStarted{false}, m_nextPhase{0}
 {
     setOnFinish([](){});
@@ -77,7 +78,11 @@ void Generator::save(const QString& filename)
 
 void Generator::addAgent(int phase, IAgent* agent)
 {
+    while(phase>=m_phaseAgents.size()){
+        m_phaseAgents.push_back(std::vector<IAgent*>());
+    }
     m_phaseAgents[phase].push_back(agent);
+
 }
 
 std::vector<IAgent*> Generator::getAgents(int phase)
@@ -100,7 +105,7 @@ void Generator::tick()
 {
     m_hasStarted = true;
     if (m_agents.size() == 0) {
-        if (m_nextPhase < 3) {
+        if (m_nextPhase < m_phaseAgents.size()) {
             populateNextStep();
         } else {
             m_isRunning = false;
@@ -170,7 +175,7 @@ void Generator::setHeightMapSize()
 void Generator::populateNextStep()
 {
     m_agents.clear();
-    if (m_nextPhase < 3) {
+    if (m_nextPhase < m_phaseAgents.size()) {
         for (unsigned int i = 0; i < m_phaseAgents[m_nextPhase].size(); ++i) {
             auto& templateAgent = m_phaseAgents[m_nextPhase][i];
             int count = templateAgent->getValue("count");
