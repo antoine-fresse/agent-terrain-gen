@@ -84,6 +84,9 @@ public:
 
     int getPhasesCount();
 
+    int getCurrentPhase() const;
+    int getTickCount() const;
+
 private:
     /**
      * @brief Crée la liste des agents pour la prochaine étape.
@@ -100,6 +103,8 @@ private:
     bool m_hasStarted;
     // L'index de la prochaine phase à executer
     int m_nextPhase;
+    // Le nombre de ticks
+    int m_tickCount;
     // Liste des agents à faire évoluer
     std::list<std::unique_ptr<IAgent>> m_agents;
 

@@ -33,7 +33,7 @@ out vec4 out_color;
 void main() {
 
 	vec4 texel;
-	if (ex_height < sandLimit) {
+	if ((ex_height < sandLimit) || (ex_weights.y != 0)) {
 		texel = texture2D(waterSampler, ex_textCoord.xy);
 	} else {
         vec4 water = texture2D(waterSampler, ex_textCoord.xy);

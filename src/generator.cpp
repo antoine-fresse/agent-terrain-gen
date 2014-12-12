@@ -5,12 +5,13 @@
 #include "agents/coastlineagent.h"
 #include "agents/mountainagent.h"
 #include "agents/smoothagent.h"
+#include "agents/riveragent.h"
 
 #include <QFile>
 #include <iostream>
 
 Generator::Generator() : m_heightmap{nullptr}, m_phaseAgents(0), m_isRunning{false},
-                        m_hasStarted{false}, m_nextPhase{0}
+                        m_hasStarted{false}, m_nextPhase{0}, m_tickCount{0}
 {
     setOnFinish([](){});
 }
@@ -52,6 +53,10 @@ void Generator::load(const QString& filename)
                 IAgent* agent = new SmoothAgent();
                 agent->fromString(line);
                 m_phaseAgents.back().push_back(agent);
+            }else if (l.at(0) == "River") {
+                IAgent* agent = new RiverAgent();
+                agent->fromString(line);
+                m_phaseAgents.back().push_back(agent);
             }
         }
     }
@@ -66,7 +71,7 @@ void Generator::save(const QString& filename)
     }
 
     QTextStream out(&file);
-    for (int i = 0; i < m_phaseAgents.size(); ++i) {
+    for (unsigned int i = 0; i < m_phaseAgents.size(); ++i) {
         if (i != 0) {
             out << "newPhase\n";
         }
@@ -78,7 +83,7 @@ void Generator::save(const QString& filename)
 
 void Generator::addAgent(int phase, IAgent* agent)
 {
-    while(phase>=m_phaseAgents.size()){
+    while((unsigned int)phase >= m_phaseAgents.size()){
         m_phaseAgents.push_back(std::vector<IAgent*>());
     }
     m_phaseAgents[phase].push_back(agent);
@@ -95,6 +100,7 @@ void Generator::reset()
     m_isRunning = false;
     m_hasStarted = false;
     m_nextPhase = 0;
+    m_tickCount = 0;
     m_agents.clear();
     if (m_heightmap != nullptr) {
         m_heightmap->reset();
@@ -105,7 +111,7 @@ void Generator::tick()
 {
     m_hasStarted = true;
     if (m_agents.size() == 0) {
-        if (m_nextPhase < m_phaseAgents.size()) {
+        if ((unsigned int)m_nextPhase < m_phaseAgents.size()) {
             populateNextStep();
         } else {
             m_isRunning = false;
@@ -123,7 +129,7 @@ void Generator::tick()
             ++it;
         }
     }
-
+    m_tickCount++;
 }
 
 void Generator::runAll()
@@ -175,7 +181,7 @@ void Generator::setHeightMapSize()
 void Generator::populateNextStep()
 {
     m_agents.clear();
-    if (m_nextPhase < m_phaseAgents.size()) {
+    if ((unsigned int)m_nextPhase < m_phaseAgents.size()) {
         for (unsigned int i = 0; i < m_phaseAgents[m_nextPhase].size(); ++i) {
             auto& templateAgent = m_phaseAgents[m_nextPhase][i];
             int count = templateAgent->getValue("count");
@@ -193,7 +199,17 @@ void Generator::setOnFinish(std::function<void()> onFinish)
     m_onFinish = onFinish;
 }
 
-int Generator::getPhasesCount(){
+int Generator::getPhasesCount()
+{
     return m_phaseAgents.size();
+}
 
+int Generator::getCurrentPhase() const
+{
+    return m_nextPhase - 1;
+}
+
+int Generator::getTickCount() const
+{
+    return m_tickCount;
 }

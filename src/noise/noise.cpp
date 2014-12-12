@@ -26,7 +26,7 @@ SimplexNoise::SimplexNoise(int largestFeature,double persistence, int seed) {
 
 double SimplexNoise::getNoise(int x, int y) {
     double result = 0;
-    for (int i = 0; i < m_octaves.size(); ++i) {
+    for (unsigned int i = 0; i < m_octaves.size(); ++i) {
         //double frequency = Math.pow(2,i);
         //double amplitude = Math.pow(persistence,octaves.length-i);
 
@@ -37,7 +37,7 @@ double SimplexNoise::getNoise(int x, int y) {
 
 double SimplexNoise::getNoise(int x,int y, int z) {
     double result = 0;
-    for (int i = 0; i < m_octaves.size(); ++i) {
+    for (unsigned int i = 0; i < m_octaves.size(); ++i) {
       double frequency = pow(2, i);
       double amplitude = pow(m_persistence, m_octaves.size() - i);
 

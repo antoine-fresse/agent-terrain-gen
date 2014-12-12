@@ -17,6 +17,8 @@ class AgentWidget;
 class QToolBar;
 class QMenu;
 class QPushButton;
+class QLabel;
+class QSpinBox;
 
 class GeneratorWindow : public QMainWindow
 {
@@ -45,6 +47,8 @@ private:
     QPushButton* m_stepButton;
     QPushButton* m_InstantButton;
     QPushButton* m_resetButton;
+    QSpinBox* m_tickSpeed;
+    QLabel* m_tickInfoLabel;
 
     QToolBar* m_agentsToolbar;
 

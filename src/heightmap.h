@@ -21,10 +21,10 @@ class HeightMap
 {
 public:
     enum Material {
-        Water = 0,
-        Grass,
-        Sand,
-        Snow,
+        Grass = 0,
+        Water = 1,
+        Sand = 2,
+        Snow = 3
     };
 
     /**
@@ -94,6 +94,7 @@ public:
 
     std::pair<int, int> getRandomInlandPosition();
     std::pair<int, int> getRandomInSeaPosition();
+    std::pair<int, int> getRandomMountainPosition();
     std::pair<int, int> getRandomPosition();
 
     void smoothAll();

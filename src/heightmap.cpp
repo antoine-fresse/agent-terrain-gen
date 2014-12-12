@@ -44,7 +44,7 @@ HeightMap::HeightMap(int size)
     }
     // Remplissage des matériaux
     for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
-        m_materials[i] = HeightMap::Water;
+        m_materials[i] = HeightMap::Grass;
     }
     // Remplissage des normales
     #pragma omp parallel
@@ -295,12 +295,22 @@ void HeightMap::setMaterial(int x, int z, Material mat)
     m_isMaterialDirty = true;
 }
 
-HeightMap::Material HeightMap::getMaterial(int x, int z){
+HeightMap::Material HeightMap::getMaterial(int x, int z) {
     if ((x >= m_nbPoints) || (z >= m_nbPoints) || x<0 || z<0) {
         throw std::runtime_error("HeightMap::getMaterial : Erreur de coordonées");
     }
-
-    return (HeightMap::Material) m_materials[(z * m_nbPoints + x)];
+    if (m_materials[(z * m_nbPoints + x)] == HeightMap::Water) {
+        return HeightMap::Water;
+    } else {
+        float height = get(x, z);
+        if (height < 1.0) {
+            return HeightMap::Water;
+        } else if (height > 100) {
+            return HeightMap::Snow;
+        } else {
+            return HeightMap::Grass;
+        }
+    }
 }
 
 float HeightMap::get(int x, int z)
@@ -414,7 +424,7 @@ void HeightMap::reset()
         }
         #pragma omp for
         for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
-            m_materials[i] = HeightMap::Water;
+            m_materials[i] = HeightMap::Grass;
         }
     }
 
@@ -546,25 +556,45 @@ std::pair<int, int> HeightMap::getRandomInSeaPosition()
     return std::make_pair<int, int>(0, 0);
 }
 
+std::pair<int, int> HeightMap::getRandomMountainPosition()
+{
+    /*int tries = 1000;
+    while (tries > 0) {
+        int x = rand() % m_nbPoints;
+        int y = rand() % m_nbPoints;
+        if (getMaterial(x, y) == HeightMap::Snow) {
+            return std::make_pair<int, int>(std::move(x), std::move(y));
+        }
+        tries--;
+    }*/
+    int index = rand() % (m_nbPoints * m_nbPoints);
+    for (int i = index; i < m_nbPoints * m_nbPoints; ++i) {
+        if (getMaterial(i % m_nbPoints, i / m_nbPoints) == HeightMap::Snow) {
+            return std::make_pair<int, int>(i % m_nbPoints, i / m_nbPoints);
+        }
+    }
+    for (int i = index; i >= 0; --i) {
+        if (getMaterial(i % m_nbPoints, i / m_nbPoints) == HeightMap::Snow) {
+            return std::make_pair<int, int>(i % m_nbPoints, i / m_nbPoints);
+        }
+    }
+    return std::make_pair<int, int>(0, 0);
+}
+
 std::pair<int, int> HeightMap::getRandomPosition()
 {
     return std::make_pair<int, int>(rand()%m_nbPoints, rand()%m_nbPoints);
 }
 
-
-
-void HeightMap::smoothAll(){
-
+void HeightMap::smoothAll()
+{
     float *mapCpy = new float[m_nbPoints*m_nbPoints];
 
     memcpy(mapCpy, m_vertices, m_nbPoints*m_nbPoints*sizeof(float));
 
     int neighbors = 2;
-    for(int y=0; y<m_nbPoints ;y++){
-        for(int x=0; x<m_nbPoints ;x++){
-
-
-
+    for (int y = 0; y < m_nbPoints; y++) {
+        for (int x = 0; x < m_nbPoints; x++) {
             int count = 0;
             float height = 0.0;
             for (int i = -neighbors; i <= neighbors; ++i) {
@@ -578,10 +608,10 @@ void HeightMap::smoothAll(){
                 }
             }
             height += 2 * mapCpy[(y * m_nbPoints + x)];
-
-            set(x, y, height / (float)(count + 2));
-
-
+            height = height / (float)(count + 2);
+            if (std::abs(get(x, y) - height) > 15) {
+                set(x, y, height);
+            }
         }
     }
 
