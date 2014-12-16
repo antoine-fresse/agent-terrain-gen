@@ -12,9 +12,9 @@ RiverAgent::RiverAgent() : m_directionIndex{0}, m_nbTry{0}, m_foundCoastLine{fal
                             m_foundMountain{false}, m_over{false}
 {
     setValue("count", 1);
-    setValue("nb Try", 1);
+    setValue("nb Try", 3);
     setValue("min Length", 10);
-    setValue("Width", 10);
+    setValue("Width", 2);
 
     int directions[8][2] = {
         {-1, 0}, {-1, -1}, {-1, 1},
@@ -27,6 +27,7 @@ RiverAgent::RiverAgent() : m_directionIndex{0}, m_nbTry{0}, m_foundCoastLine{fal
 
 void RiverAgent::spawn(HeightMap* world)
 {
+    m_path.clear();
     m_world = world;
     m_width = getValue("Width");
     m_maxTry = getValue("nb Try");

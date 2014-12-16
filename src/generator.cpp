@@ -67,7 +67,7 @@ void Generator::save(const QString& filename)
 {
     QFile file(filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        throw std::runtime_error("Generator::save : impossible de charger le fichier");
+        throw std::runtime_error("Generator::save : impossible de sauvegarder le fichier");
     }
 
     QTextStream out(&file);
