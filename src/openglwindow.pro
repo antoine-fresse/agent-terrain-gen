@@ -12,7 +12,8 @@ SOURCES += \
 	noise/noise.cpp \
 	noise/octave.cpp \
 	generator.cpp \
-    agents/riveragent.cpp
+    agents/riveragent.cpp \
+    agents/beachagent.cpp
 
 unix{
 	QMAKE_CXXFLAGS+=-fopenmp
@@ -43,7 +44,8 @@ HEADERS += \
 	noise/random.h \
 	generator.h \
 	agents/abstractagent.h \
-    agents/riveragent.h
+    agents/riveragent.h \
+    agents/beachagent.h
 
 
 RESOURCES += \

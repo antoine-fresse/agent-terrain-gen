@@ -99,6 +99,8 @@ public:
 
     void smoothAll();
 
+    bool isValid(int x, int y);
+
 private:
     void update(GameWidget* gl, bool updateMaterial);
     void updateNormal(int x, int z);

@@ -44,7 +44,7 @@ HeightMap::HeightMap(int size)
     }
     // Remplissage des matériaux
     for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
-        m_materials[i] = HeightMap::Grass;
+        m_materials[i] = HeightMap::Water;
     }
     // Remplissage des normales
     #pragma omp parallel
@@ -424,7 +424,7 @@ void HeightMap::reset()
         }
         #pragma omp for
         for (int i = 0; i < m_nbPoints * m_nbPoints; ++i) {
-            m_materials[i] = HeightMap::Grass;
+            m_materials[i] = HeightMap::Water;
         }
     }
 
@@ -589,32 +589,47 @@ std::pair<int, int> HeightMap::getRandomPosition()
 void HeightMap::smoothAll()
 {
     float *mapCpy = new float[m_nbPoints*m_nbPoints];
+    int *matCpy = new int[m_nbPoints*m_nbPoints];
 
     memcpy(mapCpy, m_vertices, m_nbPoints*m_nbPoints*sizeof(float));
+    memcpy(matCpy, m_materials, m_nbPoints*m_nbPoints*sizeof(int));
 
     int neighbors = 2;
     for (int y = 0; y < m_nbPoints; y++) {
         for (int x = 0; x < m_nbPoints; x++) {
             int count = 0;
+            int waterNeightbors = 0;
             float height = 0.0;
             for (int i = -neighbors; i <= neighbors; ++i) {
                 for (int j = -neighbors; j <= neighbors; ++j) {
                     int newX = x + i;
                     int newY = y + j;
                     if ((newX >= 0) && (newY >= 0) && (newX < m_nbPoints) && (newY < m_nbPoints)) {
+                        if(matCpy[(newY * m_nbPoints + newX)] == HeightMap::Water)
+                            waterNeightbors++;
                         height += mapCpy[(newY * m_nbPoints + newX)];
                         count++;
                     }
                 }
             }
-            height += 2 * mapCpy[(y * m_nbPoints + x)];
-            height = height / (float)(count + 2);
-            if (std::abs(get(x, y) - height) > 15) {
-                set(x, y, height);
-            }
+            /*if(matCpy[(y * m_nbPoints + x)]!=HeightMap::Water && waterNeightbors >= 7){
+                setMaterial(x,y, HeightMap::Water);
+                //set(x, y, 0.0f);
+            }else{*/
+
+                height += 2 * mapCpy[(y * m_nbPoints + x)];
+                height = height / (float)(count + 2);
+                if (std::abs(get(x, y) - height) > 5) {
+                    set(x, y, height);
+                }
+            //}
         }
     }
 
     delete[] mapCpy;
+    delete[] matCpy;
+}
 
+bool HeightMap::isValid(int x, int y){
+    return (x >= 0) && (y >= 0) && (x < m_nbPoints) && (y < m_nbPoints);
 }

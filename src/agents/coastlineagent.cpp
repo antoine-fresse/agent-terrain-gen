@@ -144,7 +144,7 @@ void CoastLineAgent::run()
                 //int height = (m_noise.getNoise(m_x, m_y) + 1.0) * 0.5 * (maxHeight - minHeight) + minHeight;
                 int height = minHeight;
                 m_world->set(m_x, m_y, height);
-                m_world->setMaterial(m_x, m_y, HeightMap::Sand);
+                m_world->setMaterial(m_x, m_y, HeightMap::Grass);
 
 
                 //m_vertices--;

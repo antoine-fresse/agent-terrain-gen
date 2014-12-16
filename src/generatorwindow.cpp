@@ -24,6 +24,7 @@
 #include "agents/smoothagent.h"
 #include "agents/mountainagent.h"
 #include "agents/riveragent.h"
+#include "agents/beachagent.h"
 
 
 GeneratorWindow::GeneratorWindow(QWidget *parent) :
@@ -37,8 +38,10 @@ GeneratorWindow::GeneratorWindow(QWidget *parent) :
         m_generator.addAgent(0, new CoastLineAgent());
         m_generator.addAgent(1, new MountainAgent());
         m_generator.addAgent(1, new MountainAgent());
-        m_generator.addAgent(2, new SmoothAgent());
-        m_generator.addAgent(3, new RiverAgent());
+        m_generator.addAgent(2, new BeachAgent());
+        m_generator.addAgent(3, new SmoothAgent());
+        m_generator.addAgent(4, new RiverAgent());
+
         // AJOUTER AGENTS ICI
     }
 

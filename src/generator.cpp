@@ -6,6 +6,7 @@
 #include "agents/mountainagent.h"
 #include "agents/smoothagent.h"
 #include "agents/riveragent.h"
+#include "agents/beachagent.h"
 
 #include <QFile>
 #include <iostream>
@@ -55,6 +56,11 @@ void Generator::load(const QString& filename)
                 m_phaseAgents.back().push_back(agent);
             }else if (l.at(0) == "River") {
                 IAgent* agent = new RiverAgent();
+                agent->fromString(line);
+                m_phaseAgents.back().push_back(agent);
+            }
+            else if (l.at(0) == "Beach") {
+                IAgent* agent = new BeachAgent();
                 agent->fromString(line);
                 m_phaseAgents.back().push_back(agent);
             }
