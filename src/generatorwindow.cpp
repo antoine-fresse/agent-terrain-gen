@@ -94,7 +94,7 @@ void GeneratorWindow::createView()
     m_InstantButton = new QPushButton("Instant");
     m_resetButton = new QPushButton("Reset");
     m_tickSpeed = new QSpinBox();
-    m_tickSpeed->setMinimum(0);
+    m_tickSpeed->setMinimum(1);
     m_tickSpeed->setMaximum(1000);
     m_tickSpeed->setValue(1000);
     m_tickInfoLabel = new QLabel("");
